@@ -17,6 +17,8 @@ ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "dist"
 PARTS = [ROOT / f"cabinet_room.part{index:02d}.bin" for index in range(1, 6)]
 FILES = [ROOT / "index.html", ROOT / "cabinet_photo.png", ROOT / "forest_background.png"]
+# Add the Preppy viewer without modifying the previously validated room model.
+EXTRA_FILES = [ROOT / "table-02.html", ROOT / "table-02.glb"]
 EXPECTED_SIZE = 10_104_552
 EXPECTED_SHA256 = "1ba8304d90217b3c97f021cda9a4d7b2ce4e69716408549033ffde3685185648"
 
@@ -41,7 +43,7 @@ def validate_glb(data: bytes) -> tuple[int, int]:
 
 
 def build() -> None:
-    for path in [*FILES, *PARTS]:
+    for path in [*FILES, *EXTRA_FILES, *PARTS]:
         if not path.is_file():
             raise FileNotFoundError(f"Missing source: {path.name}")
         if path.stat().st_size == 0:
@@ -58,7 +60,7 @@ def build() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
-    for path in [*FILES, *PARTS]:
+    for path in [*FILES, *EXTRA_FILES, *PARTS]:
         shutil.copyfile(path, OUT / path.name)
     (OUT / "cabinet_room.glb").write_bytes(model)
     (OUT / ".nojekyll").write_text("", encoding="utf-8")

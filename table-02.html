@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Сравнение стола iModern Preppy: оригинальная фотография и вращаемая 3D-модель с PBR-материалами.">
+<title>Стол № 2 — Preppy | Оригинал / 3D</title>
+<style>
+:root{--ink:#292922;--muted:#706e65;--line:#dad8d0;--paper:#f8f7f3;--accent:#78513d}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 4vw;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:.08em}
+header strong{font-weight:700}a{color:inherit}header a{text-decoration:none;border-bottom:1px solid #aaa}
+main{max-width:1560px;margin:auto;padding:27px 4vw 55px}
+.topline{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:8px 0 27px}
+h1{font-size:clamp(36px,5vw,68px);font-weight:400;line-height:1;letter-spacing:-.06em;margin:7px 0 0}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.21em;color:var(--accent)}
+.sku{font-size:13px;color:var(--muted)}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{min-width:0;border:1px solid var(--line);background:#fff}
+.panelhead{height:54px;padding:15px 19px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.panelhead strong{font-size:13px;letter-spacing:.02em}.panelhead small{font-size:11px;color:var(--muted)}
+.media{height:min(53vw,620px);min-height:350px;position:relative;overflow:hidden;background:#f3f1ed}
+#original{width:100%;height:100%;object-fit:contain;display:block}
+#original-error{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;background:#f5f2ed;color:#6b5d54;font-size:14px}
+#viewer{width:100%;height:100%;display:block;touch-action:none}
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:#756f67;background:#f0eee9}
+#loading.err{color:#9b432d}
+.pills{display:flex;gap:7px;flex-wrap:wrap;padding:13px 14px 15px;border-top:1px solid var(--line)}
+button{cursor:pointer;background:#fff;border:1px solid #cfccc3;border-radius:30px;padding:8px 13px;color:#333;font-size:12px}
+button:hover,button.active{background:#332f2a;border-color:#332f2a;color:white}
+.caption{min-height:58px;padding:14px 19px;color:var(--muted);font-size:12px;line-height:1.55}
+.meta{border-top:1px solid var(--line);padding-top:27px;margin-top:25px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.meta .label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#928f86}
+.meta .value{font-size:15px;margin-top:7px;line-height:1.5}
+footer{margin-top:35px;padding:18px 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+footer a,.link{color:#74513b;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:920px){.comparison{grid-template-columns:1fr}.media{height:68vw;min-height:320px}.meta{grid-template-columns:1fr 1fr}.topline{align-items:start;flex-direction:column}}
+@media(max-width:500px){header{padding:16px}.media{height:84vw;min-height:300px}.pills button{padding:8px 10px}.meta{gap:16px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"}}</script>
+</head>
+<body>
+<header><strong>КАБИНЕТ / 3D</strong><a href="./index.html">Вернуться к комнате</a></header>
+<main>
+<div class="topline"><div><div class="eyebrow">Предмет 02 / визуальная сверка</div><h1>Preppy — стол</h1></div><div class="sku">iModern · IMR-1329172 · Орех</div></div>
+<div class="comparison">
+<section class="panel">
+<div class="panelhead"><strong>01 / Оригинал</strong><small>Фотография продавца</small></div>
+<div class="media">
+<img id="original" alt="Оригинальный письменный стол Preppy из шпона ореха: три ящика и четыре деревянные ножки" src="https://img.inmyroom.ru/inmyroom/resize/700x700/jpg%3A85/uploads/photo/file/06/063d/jpg_1000_063dc75d-b7e4-4fd6-9cf9-dc01abfddd03.jpg?sign=ec7582175f782bb4f7fb0deaaf381e4d85b639245b0e77035194209ef4869330">
+<div id="original-error">Фотография не загрузилась.<p><a class="link" href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">Открыть оригинал на INMYROOM</a></p></div>
+</div>
+<div class="pills"><button id="photomain" class="active">Общий вид</button><button id="photodetail">Детали ящиков</button><a class="link" style="align-self:center;margin-left:auto;font-size:12px" href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">Карточка товара</a></div>
+<div class="caption">Оригинальная фотография из карточки товара. Масштаб, камера и студийный свет изображения продавца неизвестны.</div>
+</section>
+<section class="panel">
+<div class="panelhead"><strong>02 / Blender → GLB</strong><small>Свободный обзор 360°</small></div>
+<div class="media">
+<canvas id="viewer"></canvas><div id="loading">Загрузка настоящей 3D-модели Preppy…</div>
+</div>
+<div class="pills" id="views">
+<button data-view="iso" class="active">Изометрия</button><button data-view="front">Спереди</button><button data-view="side">Сбоку</button><button data-view="back">Сзади</button><button data-view="top">Сверху</button><button data-view="bottom">Снизу</button>
+</div>
+<div class="caption">Вращай мышью или пальцем · Приближение колесом или двумя пальцами. Фактическая геометрия GLB, а не последовательность картинок.</div>
+</section>
+</div>
+<div class="meta">
+<div><div class="label">Габариты</div><div class="value">120 × 62 × 76 см</div></div>
+<div><div class="label">Конструкция</div><div class="value">3 ящика push-to-open</div></div>
+<div><div class="label">Материалы</div><div class="value">Ореховый шпон / МДФ / бук</div></div>
+<div><div class="label">Файлы</div><div class="value"><a class="link" href="./table-02.glb" download>Скачать модель GLB</a></div></div>
+</div>
+<footer><span>Реконструкция по фотографиям изделия. Геометрия внутренних узлов и оттенок шпона требуют физического образца для точного подтверждения.</span><span>Источник: <a href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">INMYROOM / Preppy</a></span></footer>
+</main>
+<script>
+const im=document.getElementById('original'), er=document.getElementById('original-error');
+im.onerror=()=>{im.style.display='none';er.style.display='flex'};
+const sources={
+ main:'https://img.inmyroom.ru/inmyroom/resize/700x700/jpg%3A85/uploads/photo/file/06/063d/jpg_1000_063dc75d-b7e4-4fd6-9cf9-dc01abfddd03.jpg?sign=ec7582175f782bb4f7fb0deaaf381e4d85b639245b0e77035194209ef4869330',
+ detail:'https://artvance.kz/d/stol_pismennyy_preppy_2.jpg'
+};
+function usePhoto(key){er.style.display='none';im.style.display='block';im.src=sources[key];document.getElementById('photomain').classList.toggle('active',key==='main');document.getElementById('photodetail').classList.toggle('active',key==='detail');}
+document.getElementById('photomain').onclick=()=>usePhoto('main');
+document.getElementById('photodetail').onclick=()=>usePhoto('detail');
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const cv=document.getElementById('viewer'), info=document.getElementById('loading');
+let ren,cam,ctrl,model,span=1;
+try{
+ ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false,powerPreference:'high-performance'});
+ ren.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+ ren.outputColorSpace=THREE.SRGBColorSpace;
+ ren.toneMapping=THREE.ACESFilmicToneMapping;ren.toneMappingExposure=.80;
+ ren.shadowMap.enabled=true;ren.shadowMap.type=THREE.PCFSoftShadowMap;
+ const sc=new THREE.Scene();sc.background=new THREE.Color('#f3f1ec');
+ cam=new THREE.PerspectiveCamera(42,1,.015,100);
+ cam.position.set(1,1.25,2);
+ ctrl=new OrbitControls(cam,cv);ctrl.enableDamping=true;ctrl.enablePan=false;ctrl.maxDistance=8;ctrl.minDistance=.25;
+ sc.add(new THREE.HemisphereLight(0xffffff,0xa7a3a0,1.5));
+ const sun=new THREE.DirectionalLight(0xffffff,2.0);sun.position.set(-2,4,5);sun.castShadow=true;
+ sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-2.7;sun.shadow.camera.right=2.7;sun.shadow.camera.top=2.7;sun.shadow.camera.bottom=-2.7;sun.shadow.bias=-0.0002;sc.add(sun);
+ const fill=new THREE.DirectionalLight(0xffeadc,.55);fill.position.set(3,2,-3);sc.add(fill);
+ const g=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.ShadowMaterial({opacity:.18}));g.rotation.x=-Math.PI/2;g.position.y=-.006;g.receiveShadow=true;sc.add(g);
+ function resize(){let w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;cam.aspect=w/h;cam.updateProjectionMatrix();ren.setSize(w,h,false)}
+ new ResizeObserver(resize).observe(cv);resize();
+ let center=new THREE.Vector3(0,.38,0);
+ function view(v='iso'){
+  if(!model)return;
+  const offsets={iso:[1.50,1.0,2.30],front:[0,.65,2.65],side:[2.6,.7,0],back:[0,.65,-2.65],top:[.001,2.9,.001],bottom:[.001,-2.9,.001]};
+  const d=new THREE.Vector3(...offsets[v]).normalize().multiplyScalar(span*1.8);
+  ctrl.target.copy(center);cam.position.copy(center).add(d);cam.lookAt(center);ctrl.update();
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+ }
+ document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));
+ new GLTFLoader().load('./table-02.glb',gltf=>{
+  model=gltf.scene;sc.add(model);
+  const box=new THREE.Box3().setFromObject(model),sz=box.getSize(new THREE.Vector3());
+  center=box.getCenter(new THREE.Vector3());span=Math.max(sz.x,sz.y,sz.z,.2);
+  model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+  cam.near=span/250;cam.far=span*100;cam.updateProjectionMatrix();ctrl.minDistance=span*.45;ctrl.maxDistance=span*9;
+  g.position.y=box.min.y-.006;
+  info.style.display='none';view('iso');
+ },undefined,e=>{info.classList.add('err');info.textContent='Не удалось загрузить GLB. Открой страницу через GitHub Pages или проверь файл table-02.glb.';console.error(e)});
+ (function animate(){requestAnimationFrame(animate);ctrl.update();ren.render(sc,cam)})();
+}catch(e){info.classList.add('err');info.textContent='WebGL недоступен в этом браузере: '+e.message;console.error(e)}
+</script>
+</body>
+</html>
