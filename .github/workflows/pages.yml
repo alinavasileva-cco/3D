@@ -1,4 +1,4 @@
-name: Validate 3D room tour (Free hosting)
+name: Publish CABINET 1.0 on GitHub Pages (Free)
 
 on:
   push:
@@ -7,22 +7,24 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: verify-3d-site
+  group: cabinet-pages
   cancel-in-progress: true
 
 jobs:
-  validate:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout private source
+      - name: Checkout source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Assemble verified GLB and complete website
+      - name: Assemble and verify the original room GLB
         run: python3 build_site.py
 
-      - name: Archive complete HTML + GLB + textures
+      - name: Upload full-site backup
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: cabinet-3d-tour-complete
@@ -31,6 +33,25 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
 
-# Website is published free of charge by Cloudflare Pages Git integration.
-# Cloudflare Pages: Build command "python3 build_site.py", output "dist", branch "main".
-# GitHub Pages is intentionally not used: it is disabled for this private repo.
+      - name: Package GitHub Pages site
+        if: ${{ github.event.repository.private == false }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    if: ${{ github.event.repository.private == false }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Enable and configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Publish the validated site
+        id: deployment
+        uses: actions/deploy-pages@v4
