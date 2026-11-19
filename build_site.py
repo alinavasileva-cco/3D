@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the approved Blender room tour for Cloudflare Pages Free.
+"""Build the approved Blender room tour for free GitHub Pages.
 
 No geometry/material/camera modifications; only binary GLB concatenation.
 No external Python packages needed.
@@ -64,7 +64,7 @@ def build() -> None:
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")
-    print(f"Cloudflare Pages output: {OUT} ({len(list(OUT.iterdir()))} files)")
+    print(f"GitHub Pages output: {OUT} ({len(list(OUT.iterdir()))} files)")
 
 
 if __name__ == "__main__":
