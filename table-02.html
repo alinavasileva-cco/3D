@@ -46,7 +46,7 @@ footer a,.link{color:#74513b;text-decoration:underline;text-underline-offset:3px
 <section class="panel">
 <div class="panelhead"><strong>01 / Оригинал</strong><small>Фотография продавца</small></div>
 <div class="media">
-<img id="original" alt="Оригинальный письменный стол Preppy из шпона ореха: три ящика и четыре деревянные ножки" src="https://img.inmyroom.ru/inmyroom/resize/700x700/jpg%3A85/uploads/photo/file/06/063d/jpg_1000_063dc75d-b7e4-4fd6-9cf9-dc01abfddd03.jpg?sign=ec7582175f782bb4f7fb0deaaf381e4d85b639245b0e77035194209ef4869330">
+<img id="original" alt="Оригинальный письменный стол Preppy из шпона ореха: три ящика и четыре деревянные ножки" src="https://imodern.ru/upload/resize_cache/iblock/cf4/1050_666_1/cf41218ec04bd696043ee112e96907b1.jpg">
 <div id="original-error">Фотография не загрузилась.<p><a class="link" href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">Открыть оригинал на INMYROOM</a></p></div>
 </div>
 <div class="pills"><button id="photomain" class="active">Общий вид</button><button id="photodetail">Детали ящиков</button><a class="link" style="align-self:center;margin-left:auto;font-size:12px" href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">Карточка товара</a></div>
@@ -75,8 +75,8 @@ footer a,.link{color:#74513b;text-decoration:underline;text-underline-offset:3px
 const im=document.getElementById('original'), er=document.getElementById('original-error');
 im.onerror=()=>{im.style.display='none';er.style.display='flex'};
 const sources={
- main:'https://img.inmyroom.ru/inmyroom/resize/700x700/jpg%3A85/uploads/photo/file/06/063d/jpg_1000_063dc75d-b7e4-4fd6-9cf9-dc01abfddd03.jpg?sign=ec7582175f782bb4f7fb0deaaf381e4d85b639245b0e77035194209ef4869330',
- detail:'https://artvance.kz/d/stol_pismennyy_preppy_2.jpg'
+ main:'https://imodern.ru/upload/resize_cache/iblock/cf4/1050_666_1/cf41218ec04bd696043ee112e96907b1.jpg',
+ detail:'https://imodern.ru/upload/resize_cache/iblock/f5e/1050_666_1/f5e498ee3ef3b27b7c849f4ce66be3b8.jpg'
 };
 function usePhoto(key){er.style.display='none';im.style.display='block';im.src=sources[key];document.getElementById('photomain').classList.toggle('active',key==='main');document.getElementById('photodetail').classList.toggle('active',key==='detail');}
 document.getElementById('photomain').onclick=()=>usePhoto('main');
