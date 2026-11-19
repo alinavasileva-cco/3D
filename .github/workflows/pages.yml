@@ -34,13 +34,11 @@ jobs:
           include-hidden-files: true
 
       - name: Package GitHub Pages site
-        if: ${{ github.event.repository.private == false }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
-    if: ${{ github.event.repository.private == false }}
     needs: build
     runs-on: ubuntu-latest
     environment:
