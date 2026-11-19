@@ -35,6 +35,11 @@
 #inspector .swatch{width:29px;height:29px;flex-shrink:0;border-radius:6px;border:1px solid #ffffff55;background:#bababa}
 #inspector .note{font-size:10px}.ins-sub{font-size:10px;color:#a2b1b9}
 .wall-range{display:flex;align-items:center;gap:10px}.wall-range input{width:100%;accent-color:#c0dac8}.wall-range output{font-size:12px;min-width:36px;text-align:right;color:#e1f2e5;font-variant-numeric:tabular-nums}
+.ceiling-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #ffffff23;padding-top:12px;margin-top:13px;color:#e4e8e5;font-size:12px}
+.ceiling-row small{display:block;margin-top:3px;color:#aeb9b6;font-size:10px}
+.ceiling-row button{background:#ffffff12;border:1px solid #ffffff39;border-radius:8px;color:#f0f3f2;padding:9px 13px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.ceiling-row button:hover:not(:disabled){background:#ffffff22}
+.ceiling-row button:disabled{opacity:.65;cursor:default}
 @media(max-width:850px){#inspector{top:auto;right:8px;bottom:54px;width:220px;padding:10px;max-height:38vh;overflow-y:auto}#inspector .mat-card{padding:7px;margin:5px 0}}
 @media(max-width:550px){#inspector{width:170px;max-height:32vh}#inspector .mat-title{font-size:10px}#inspector .mat-value{font-size:9px}.panel{max-height:65vh}}
 
@@ -54,20 +59,12 @@
 </div>
 <div class="section">
 <div class="section"><div class="label">Освещение</div><div class="buttons"><button id="dayMode" class="active" aria-pressed="true">☀ День</button><button id="nightMode" aria-pressed="false">☾ Ночь</button></div></div>
-<div class="section"><div class="label">Прозрачность стен и двери</div><div class="wall-range"><input id="wallOpacity" type="range" min="0" max="100" value="0" step="5" aria-label="Прозрачность стен"><output id="wallOpacityValue">0%</output></div><p class="note">0% — стены и дверь видны; 100% — стены и дверь скрыты. Пол и окно не затрагиваются.</p></div>
-<div class="label">Отображение</div>
-<label class="switch">Потолок скрыт <input type="checkbox" id="ceil"/></label>
-<label class="switch">Мягкие тени <input type="checkbox" id="shadows" checked/></label>
-<label class="switch">Детали материалов <input type="checkbox" id="inspect" checked/></label>
+<div class="section"><div class="label">Прозрачность стен и двери</div><div class="wall-range"><input id="wallOpacity" type="range" min="0" max="100" value="0" step="5" aria-label="Прозрачность стен"><output id="wallOpacityValue">0%</output></div><p class="note">0% — стены и дверь видны; 100% — стены и дверь скрыты. Пол и окно не затрагиваются.</p>
+<div class="ceiling-row"><span>Потолок<small>Автоматически скрывается в виде сверху</small></span><button id="ceilingToggle" type="button" aria-pressed="true">Скрыть</button></div></div>
 </div>
-<div class="section">
-<div class="label">Навигация</div>
-<div class="buttons"><button id="center">В центр комнаты</button><button id="reset">Сбросить камеру</button></div>
-<p class="note">Мышь — вращать камеру. Колесо — приблизить. Правая кнопка — сдвиг. <b>W A S D</b> или стрелки — движение. Двойной щелчок по полу — перейти в выбранную точку.</p>
 </div>
-<div id="status"><span class="dot" id="dot"></span><span id="statusText">Загрузка 3D-модели…</span></div>
-<div id="progress"><div id="fill"></div></div>
-</div>
+<div id="status" style="display:none" role="status" aria-live="polite"><span class="dot" id="dot"></span><span id="statusText">Загрузка 3D-модели…</span></div>
+<div id="progress" style="display:none"><div id="fill"></div></div>
 <div id="toolbar"><a href="cabinet_photo.png" target="_blank" rel="noopener">Фоторендер ↗</a><button id="full">На весь экран ⛶</button></div>
 <aside id="inspector" aria-label="Отделка комнаты">
 <div class="ins-head">Материалы комнаты</div>
@@ -103,7 +100,8 @@ controls.maxPolarAngle=Math.PI-.05;controls.minDistance=.18;controls.maxDistance
 const hemi=new THREE.HemisphereLight(0xf8f4e9,0x6f716d,2.1);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff6e9,1.95);sun.position.set(-1,7,-3.6);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.camera.near=.3;sun.shadow.camera.far=30;sun.shadow.bias=-.00008;sun.shadow.normalBias=.018;sun.target.position.set(1.6,0,2.3);scene.add(sun,sun.target);
 const fill=new THREE.DirectionalLight(0xd7ebff,.95);fill.position.set(3,4,6);scene.add(fill);
-const clock=new THREE.Clock(),pressed=new Set(),meshes=[],ceilings=[],floors=[];
+const clock=new THREE.Clock(),pressed=new Set(),meshes=[],floors=[];
+let ceiling=null,ceilingRequestedVisible=true;
 const wallMeshes=[];
 const lamp1=new THREE.PointLight(0xffddb1,0,6.5,1.8),lamp2=new THREE.PointLight(0xffdfbc,0,5,1.8);
 lamp1.position.set(1.3,2.4,1.7);lamp2.position.set(2.75,2.2,3.6);scene.add(lamp1,lamp2);
@@ -120,20 +118,45 @@ center:{pos:[1.65,1.68,2.34],look:[1.7,1.5,.15]}};
 function setView(name,immediate=false){
 const p=presets[name];if(!p)return;view=name;
 document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
-if(name==='top'){document.getElementById('ceil').checked=true;syncCeiling()}
+syncCeiling()
 const endPos=new THREE.Vector3(...p.pos),endLook=new THREE.Vector3(...p.look);
 if(immediate){camera.position.copy(endPos);controls.target.copy(endLook);controls.update();animation=null}
 else animation={start:performance.now(),duration:750,p0:camera.position.clone(),t0:controls.target.clone(),p1:endPos,t1:endLook};
 }
-function syncCeiling(){const hide=document.getElementById('ceil').checked;ceilings.forEach(o=>o.visible=!hide)}
+function createCeiling(){
+ if(ceiling)return;
+ // Interior ceiling contour from the actual GLB wall bounds, including west-wall recess:
+ // x=0..3.365m, z=0..4.685m; west wall steps to x=0.59m after z=2.91m.
+ const outline=new THREE.Shape();
+ outline.moveTo(0,0);outline.lineTo(3.365,0);outline.lineTo(3.365,4.685);
+ outline.lineTo(0.59,4.685);outline.lineTo(0.59,2.91);outline.lineTo(0,2.91);outline.closePath();
+ const geometry=new THREE.ShapeGeometry(outline);geometry.rotateX(Math.PI/2);
+ const wall=wallMeshes.find(o=>/WALL_N_WINDOW_LEFT/.test(o.name));
+ const wallMaterial=wall?firstMaterial(wall):null;
+ const material=new THREE.MeshStandardMaterial({
+  name:'Потолок · отделка в цвет стен',
+  color:wallMaterial?.color?.clone()||new THREE.Color(0xd0c6b7),
+  roughness:wallMaterial?.roughness??0.9,metalness:0,side:THREE.DoubleSide
+ });
+ ceiling=new THREE.Mesh(geometry,material);
+ ceiling.name='КАБИНЕТ 1.0 | ПОТОЛОК';
+ ceiling.position.y=2.647; // 3mm below top of the measured walls (2.650m)
+ ceiling.castShadow=false; // preserve approved interior lighting
+ ceiling.receiveShadow=true;
+ scene.add(ceiling);
+}
+function syncCeiling(){
+ const top=view==='top';
+ if(ceiling)ceiling.visible=ceilingRequestedVisible&&!top;
+ const button=document.getElementById('ceilingToggle');
+ button.disabled=top;
+ button.textContent=top?'Скрыт сверху':ceilingRequestedVisible?'Скрыть':'Показать';
+ button.setAttribute('aria-pressed',String(ceilingRequestedVisible&&!top));
+}
 function status(label,loaded=false){document.getElementById('statusText').textContent=label;document.getElementById('dot').classList.toggle('ready',loaded);if(loaded)document.getElementById('progress').style.display='none'}
 function resize(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight,false)}
 window.addEventListener('resize',resize);
 document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.view)));
-document.getElementById('center').addEventListener('click',()=>setView('center'));
-document.getElementById('reset').addEventListener('click',()=>setView('entrance'));
-document.getElementById('ceil').addEventListener('change',syncCeiling);
-document.getElementById('shadows').addEventListener('change',e=>{renderer.shadowMap.enabled=e.target.checked;scene.traverse(o=>{if(o.isMesh&&o.material)o.material.needsUpdate=true})});
 document.getElementById('full').addEventListener('click',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()});
 window.addEventListener('keydown',e=>{if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowLeft','ArrowDown','ArrowRight'].includes(e.code)){pressed.add(e.code);e.preventDefault()}});
 window.addEventListener('keyup',e=>pressed.delete(e.code));
@@ -147,7 +170,7 @@ const pt=hits[0].point;if(pt.x<.1||pt.x>3.26||pt.z<.12||pt.z>4.57)return;
 animation={start:performance.now(),duration:600,p0:camera.position.clone(),t0:controls.target.clone(),p1:new THREE.Vector3(pt.x,1.6,pt.z),t1:new THREE.Vector3(pt.x,1.35,Math.max(.15,pt.z-1))};
 });
 canvas.addEventListener('click',e=>{
- if(!room||!document.getElementById('inspect').checked)return;
+ if(!room)return;
  const hit=nearestSurface(e);if(hit)updateHover(hit);
 });
 
@@ -230,12 +253,13 @@ function nearestSurface(e){
 }
 let lastHover=0;
 canvas.addEventListener('pointermove',e=>{
- if(!room||!document.getElementById('inspect').checked)return;
+ if(!room)return;
  if(performance.now()-lastHover<70)return;
  lastHover=performance.now();
  const hit=nearestSurface(e);
  if(hit)updateHover(hit);
 });
+document.getElementById('ceilingToggle').addEventListener('click',()=>{ceilingRequestedVisible=!ceilingRequestedVisible;syncCeiling()});
 document.getElementById('dayMode').addEventListener('click',()=>setLightMode('day'));
 document.getElementById('nightMode').addEventListener('click',()=>setLightMode('night'));
 document.getElementById('wallOpacity').addEventListener('input',e=>setWallsTransparency(e.target.value));
@@ -277,7 +301,6 @@ loadRoom().then(gltf=>{
  room.traverse(obj=>{
   if(!obj.isMesh)return;meshes.push(obj);obj.castShadow=!/glass|стекл|пол|floor/i.test(obj.name);obj.receiveShadow=true;
   const n=obj.name.toLowerCase();
-  if(/потол|ceiling/.test(n))ceilings.push(obj);
   if(/пол bronix|floor.*bronix|плашк|floor_substrate/i.test(n))floors.push(obj);
   if(isWallName(obj.name)){
    obj.material=Array.isArray(obj.material)?obj.material.map(m=>m.clone()):obj.material.clone();
@@ -285,7 +308,7 @@ loadRoom().then(gltf=>{
   }
   if(/glass_|window_transparent|стекл/i.test(n)){obj.material=new THREE.MeshPhysicalMaterial({color:0xe1f2f1,metalness:0,roughness:.05,transparent:true,opacity:.10,depthWrite:false,side:THREE.DoubleSide});obj.castShadow=false;} else if(obj.material&&obj.material.isMeshStandardMaterial){obj.material.side=THREE.DoubleSide;obj.material.needsUpdate=true}
  });
- scene.add(room);syncCeiling();setView('entrance',true);
+ scene.add(room);createCeiling();setView('entrance',true);
  const qs=new URLSearchParams(location.search);
  setLightMode(qs.get('night')==='1'?'night':'day');
  const transparency=Math.max(0,Math.min(100,Number(qs.get('walls'))||0));
