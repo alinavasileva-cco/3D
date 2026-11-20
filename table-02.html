@@ -60,7 +60,7 @@ footer a,.link{color:#74513b;text-decoration:underline;text-underline-offset:3px
 <div class="pills" id="views">
 <button data-view="iso" class="active">Изометрия</button><button data-view="front">Спереди</button><button data-view="side">Сбоку</button><button data-view="back">Сзади</button><button data-view="top">Сверху</button><button data-view="bottom">Снизу</button>
 </div>
-<div class="caption">Вращай мышью или пальцем · Приближение колесом или двумя пальцами. Фактическая геометрия GLB, а не последовательность картинок.</div>
+<div class="caption">Вращай мышью или пальцем · Приближение колесом или двумя пальцами. Геометрия GLB из Blender V5, в масштабе 1:1.</div>
 </section>
 </div>
 <div class="meta">
@@ -69,7 +69,7 @@ footer a,.link{color:#74513b;text-decoration:underline;text-underline-offset:3px
 <div><div class="label">Материалы</div><div class="value">Ореховый шпон / МДФ / бук</div></div>
 <div><div class="label">Файлы</div><div class="value"><a class="link" href="./table-02.glb" download>Скачать модель GLB</a></div></div>
 </div>
-<footer><span>Реконструкция по фотографиям изделия. Геометрия внутренних узлов и оттенок шпона требуют физического образца для точного подтверждения.</span><span>Источник: <a href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">INMYROOM / Preppy</a></span></footer>
+<footer><span>Реконструкция по фотографиям изделия. Геометрия скрытых узлов и точный колориметрический цвет шпона без образца не подтверждены.</span><span>Источник: <a href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">INMYROOM / Preppy</a></span></footer>
 </main>
 <script>
 const im=document.getElementById('original'), er=document.getElementById('original-error');
@@ -115,7 +115,7 @@ try{
   document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
  }
  document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));
- new GLTFLoader().load('./table-02.glb?v=20261120',gltf=>{
+ new GLTFLoader().load('./table-02.glb?v=v5-photo-color',gltf=>{
   model=gltf.scene;sc.add(model);
   const box=new THREE.Box3().setFromObject(model),sz=box.getSize(new THREE.Vector3());
   center=box.getCenter(new THREE.Vector3());span=Math.max(sz.x,sz.y,sz.z,.2);
