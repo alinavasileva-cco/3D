@@ -98,7 +98,7 @@ def build() -> None:
             })
             with urllib.request.urlopen(req, timeout=25) as reply:
                 data = reply.read(8_000_001)
-            if len(data) > 8_000_000 or not data.startswith(b"\\xff\\xd8\\xff"):
+            if len(data) > 8_000_000 or not data.startswith(bytes.fromhex("ffd8ff")):
                 raise ValueError("Reference image is not a valid JPEG or exceeds 8 MB")
             (OUT / name).write_bytes(data)
             print(f"Saved Preppy reference {name}: {len(data)} bytes")
@@ -106,7 +106,8 @@ def build() -> None:
             if required:
                 raise RuntimeError(f"Cannot bundle the original Preppy photo: {exc}") from exc
             print(f"Optional Preppy detail image not available: {exc}")
-\n    (OUT / "cabinet_room.glb").write_bytes(model)
+
+    (OUT / "cabinet_room.glb").write_bytes(model)
     # Assemble the separate photorealistic table HTML, without altering the room tour.
     import gzip
     table_parts = [ROOT / "table-v4" / f"part{i:02d}.gzchunk" for i in range(11)]
