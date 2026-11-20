@@ -46,7 +46,7 @@ footer a,.link{color:#74513b;text-decoration:underline;text-underline-offset:3px
 <section class="panel">
 <div class="panelhead"><strong>01 / Оригинал</strong><small>Фотография продавца</small></div>
 <div class="media">
-<img id="original" alt="Оригинальный письменный стол Preppy из шпона ореха: три ящика и четыре деревянные ножки" src="./preppy-original-main.jpg">
+<img id="original" alt="Оригинальный письменный стол Preppy из шпона ореха: три ящика и четыре деревянные ножки" src="./preppy-original-main.webp">
 <div id="original-error">Фотография не загрузилась.<p><a class="link" href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">Открыть оригинал на INMYROOM</a></p></div>
 </div>
 <div class="pills"><button id="photomain" class="active">Общий вид</button><button id="photodetail">Детали ящиков</button><a class="link" style="align-self:center;margin-left:auto;font-size:12px" href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">Карточка товара</a></div>
@@ -76,8 +76,8 @@ const im=document.getElementById('original'), er=document.getElementById('origin
 im.onerror=()=>{im.style.display='none';er.style.display='flex'};
 im.onload=()=>{er.style.display='none';im.style.display='block'};
 const sources={
- main:'./preppy-original-main.jpg',
- detail:'./preppy-original-detail.jpg'
+ main:'./preppy-original-main.webp',
+ detail:'./preppy-original-detail.webp'
 };
 function usePhoto(key){er.style.display='none';im.style.display='block';im.src=sources[key];document.getElementById('photomain').classList.toggle('active',key==='main');document.getElementById('photodetail').classList.toggle('active',key==='detail');}
 document.getElementById('photomain').onclick=()=>usePhoto('main');
