@@ -86,19 +86,19 @@ def build() -> None:
     # Mirror the exact manufacturer images into the GitHub Pages build.  The
     # remote host disallows some mobile/browser hotlinks; local files avoid that.
     preppy_photos = [
-        ("preppy-original-main.jpg", "https://imodern.ru/upload/resize_cache/iblock/cf4/1050_666_1/cf41218ec04bd696043ee112e96907b1.jpg", True),
-        ("preppy-original-detail.jpg", "https://imodern.ru/upload/resize_cache/iblock/f5e/1050_666_1/f5e498ee3ef3b27b7c849f4ce66be3b8.jpg", False),
+        ("preppy-original-main.webp", "https://imodern.ru/upload/resize_cache/iblock/cf4/1050_666_1/cf41218ec04bd696043ee112e96907b1.jpg", True),
+        ("preppy-original-detail.webp", "https://imodern.ru/upload/resize_cache/iblock/f5e/1050_666_1/f5e498ee3ef3b27b7c849f4ce66be3b8.jpg", False),
     ]
     for name, url, required in preppy_photos:
         try:
             req = urllib.request.Request(url, headers={
                 "User-Agent": "Mozilla/5.0",
-                "Accept": "image/jpeg",
+                "Accept": "image/webp,image/*;q=0.8",
             })
             with urllib.request.urlopen(req, timeout=25) as reply:
                 data = reply.read(8_000_001)
-            if len(data) > 8_000_000 or not data.startswith(bytes.fromhex("ffd8ff")):
-                raise ValueError(f"Reference response is not a JPEG: first bytes {data[:16]!r}, length {len(data)}")
+            if len(data) > 8_000_000 or not (data[:4] == b"RIFF" and data[8:12] == b"WEBP"):
+                raise ValueError(f"Reference response is not WebP: first bytes {data[:16]!r}, length {len(data)}")
             (OUT / name).write_bytes(data)
             print(f"Saved Preppy reference {name}: {len(data)} bytes")
         except Exception as exc:
