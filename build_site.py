@@ -72,6 +72,21 @@ def build() -> None:
     for path in [*FILES, *EXTRA_FILES, *PARTS]:
         shutil.copyfile(path, OUT / path.name)
     (OUT / "cabinet_room.glb").write_bytes(model)
+    # Assemble the separate photorealistic table HTML, without altering the room tour.
+    import gzip
+    table_parts = [ROOT / "table-v4" / f"part{i:02d}.gzchunk" for i in range(11)]
+    for part in table_parts:
+        if not part.is_file():
+            raise FileNotFoundError(f"Missing table V4 transfer part: {part}")
+    packed_table = b"".join(part.read_bytes() for part in table_parts)
+    if len(packed_table) != 16613948 or hashlib.sha256(packed_table).hexdigest() != "d9a7c28bfb67f52938cdd26f2931200813e36fa337ed07bc5f60279746a5d903":
+        raise ValueError("The table V4 transfer parts differ from the original")
+    table_html = gzip.decompress(packed_table)
+    if len(table_html) != 23698943 or hashlib.sha256(table_html).hexdigest() != "3e9d8f2ad6e521498e05df7ec7ba3dff2a952645c784546f6ae84ff55e2258b5":
+        raise ValueError("The restored table V4 HTML does not match the browser-tested file")
+    if b'modelBytes' not in table_html or b'<model-viewer' not in table_html:
+        raise ValueError("The table V4 HTML lacks the embedded 3D model viewer")
+    (OUT / "table-01-v4.html").write_bytes(table_html)
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")
