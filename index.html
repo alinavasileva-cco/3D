@@ -86,6 +86,58 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
  #panel{max-height:calc(100dvh - 72px)}
 }
 @media(prefers-reduced-motion:no-preference){.panel-toggle{transition:background .16s,color .16s}}
+
+/* Furniture and rug catalog */
+.catalog-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 12px}
+.catalog-tabs button{padding:10px;border:1px solid #ffffff47;background:#ffffff12;color:#e7ece7;border-radius:8px;cursor:pointer;font:inherit;font-size:12px}
+.catalog-tabs button[aria-selected="true"]{background:#d0e6d7;border-color:#d0e6d7;color:#173928;font-weight:700}
+#rugCategory[hidden],#furnitureCategory[hidden],#cartBackdrop[hidden]{display:none!important}
+.rug-check{display:flex;align-items:center;gap:8px;margin:4px 0 12px;color:#f2f6f2;font-size:12px;font-weight:650;cursor:pointer}
+.rug-check input{width:19px;height:19px;accent-color:#b3ddbd;cursor:pointer;flex-shrink:0}
+.rug-select{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:7px 0!important}
+.rug-select button{padding:6px!important;min-width:0;text-align:left;display:flex;flex-direction:column;gap:4px;justify-content:space-between;border-radius:9px!important}
+.rug-select button img{display:block;width:100%;height:75px;max-height:none!important;object-fit:contain;background:white;margin:0!important;border-radius:5px}
+.rug-mini-name{font-size:11px;line-height:1.25;min-height:27px}
+.rug-mini-price{font-size:12px;line-height:1.3;white-space:nowrap}
+.rug-hint{margin:5px 0 10px;color:#acbcb3;font-size:10px;line-height:1.5}
+#rugSourceLink{display:none}
+#rugProductName{font-size:12px!important;line-height:1.4}
+#rugPriceValue{font-size:16px!important}
+#rugSeller{font-size:10px}
+.furniture-preview{border:1px solid #ffffff32;border-radius:10px;background:#ffffff09;padding:12px;font-size:12px;line-height:1.55}
+.furniture-preview p{font-size:11px;color:#b6c6bd;line-height:1.5;margin:7px 0 10px}
+.furniture-view{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid #ffffff20}
+.furniture-view a{color:#cdebd6;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+#inspector{max-height:calc(100dvh - 240px)}
+/* Always visible budget and cart drawer */
+#budgetBar{position:fixed;z-index:26;right:22px;bottom:17px;width:320px;min-height:60px;display:flex;align-items:center;gap:10px;justify-content:space-between;padding:9px 11px 9px 15px;background:#17201ded;backdrop-filter:blur(16px);border:1px solid #ffffff3d;border-radius:14px;box-shadow:0 12px 30px #0006;color:#f9fbf9}
+.budget-amount{min-width:0;display:flex;flex-direction:column;gap:3px}.budget-amount small{font-size:10px;color:#bfcfc4;line-height:1.25}.budget-amount strong{font-size:19px;letter-spacing:-.03em;white-space:nowrap;font-variant-numeric:tabular-nums}
+#budgetBar button{border:none;border-radius:9px;background:#cde8d6;color:#153327;font-family:inherit;font-size:12px;font-weight:700;padding:12px 11px;cursor:pointer;white-space:nowrap}
+#budgetBar button:hover{background:#e7f3e9}#cartBadge{display:inline-grid;place-items:center;border-radius:50%;background:#143b2b;color:#e9fbef;width:19px;height:19px;font-size:10px;margin-left:4px}
+#cartBackdrop{position:fixed;inset:0;z-index:40;display:flex;justify-content:flex-end}
+#cartDim{position:absolute;inset:0;background:#0609089c}
+#cartDialog{position:relative;width:min(420px,100vw);height:100%;overflow:auto;background:#1a211e;color:#eef5ef;box-shadow:-10px 0 40px #0008;padding:20px;display:flex;flex-direction:column;gap:13px}
+#cartDialog header{display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid #ffffff30;padding-bottom:14px}
+#cartDialog h2{font-size:19px;margin:0}
+#closeCart{background:transparent;color:#fff;border:1px solid #ffffff55;padding:8px 12px;border-radius:8px;font-size:16px;cursor:pointer}
+#cartItems{flex:1}
+.cart-product{display:grid;grid-template-columns:69px 1fr;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid #ffffff25}
+.cart-product img{width:69px;height:82px;object-fit:contain;background:#fff;border-radius:6px}
+.cart-product strong{font-size:13px;display:block}.cart-product small{font-size:11px;color:#b7c6bb;display:block;margin:4px 0}
+.cart-product .cart-price{font-size:16px;margin:5px 0;display:block;font-weight:700}
+.cart-product a{font-size:11px;color:#c9e8d2;margin-right:10px}
+.cart-product button{background:none;color:#e2b2b2;border:none;padding:5px 0;text-decoration:underline;cursor:pointer;font-family:inherit;font-size:11px}
+.cart-empty{font-size:13px;color:#cbd6cf;line-height:1.6;padding:20px 0}
+.cart-summary{display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding:13px 0;border-top:1px solid #ffffff40}
+.cart-disclaimer{color:#adbbb1;font-size:11px;line-height:1.6;margin:0}
+#clearCart{background:#ffffff12;color:#fff;border:1px solid #ffffff4a;border-radius:9px;padding:12px;font-size:12px;cursor:pointer}
+#hud{bottom:94px}
+@media(max-width:850px){
+ #inspector{bottom:86px;max-height:calc(100dvh - 170px);width:min(300px,calc(100vw - 20px))}
+ #budgetBar{bottom:8px;right:10px;left:10px;width:auto;min-height:56px}
+ #cartDialog{width:100vw;padding:16px}
+ #hud{display:none}
+}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"}}</script>
 </head>
