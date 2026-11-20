@@ -12,6 +12,7 @@ from pathlib import Path
 import shutil
 import struct
 import sys
+import urllib.request
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "dist"
@@ -82,7 +83,30 @@ def build() -> None:
         dest = OUT / path.relative_to(ROOT)
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(path, dest)
-    (OUT / "cabinet_room.glb").write_bytes(model)
+    # Mirror the exact manufacturer images into the GitHub Pages build.  The
+    # remote host disallows some mobile/browser hotlinks; local files avoid that.
+    preppy_photos = [
+        ("preppy-original-main.jpg", "https://imodern.ru/upload/resize_cache/iblock/cf4/1050_666_1/cf41218ec04bd696043ee112e96907b1.jpg", True),
+        ("preppy-original-detail.jpg", "https://imodern.ru/upload/resize_cache/iblock/f5e/1050_666_1/f5e498ee3ef3b27b7c849f4ce66be3b8.jpg", False),
+    ]
+    for name, url, required in preppy_photos:
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (compatible; Cabinet3D/1.0)",
+                "Referer": "https://imodern.ru/",
+                "Accept": "image/avif,image/webp,image/jpeg,image/*;q=0.8",
+            })
+            with urllib.request.urlopen(req, timeout=25) as reply:
+                data = reply.read(8_000_001)
+            if len(data) > 8_000_000 or not data.startswith(b"\\xff\\xd8\\xff"):
+                raise ValueError("Reference image is not a valid JPEG or exceeds 8 MB")
+            (OUT / name).write_bytes(data)
+            print(f"Saved Preppy reference {name}: {len(data)} bytes")
+        except Exception as exc:
+            if required:
+                raise RuntimeError(f"Cannot bundle the original Preppy photo: {exc}") from exc
+            print(f"Optional Preppy detail image not available: {exc}")
+\n    (OUT / "cabinet_room.glb").write_bytes(model)
     # Assemble the separate photorealistic table HTML, without altering the room tour.
     import gzip
     table_parts = [ROOT / "table-v4" / f"part{i:02d}.gzchunk" for i in range(11)]
