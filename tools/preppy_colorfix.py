@@ -4,15 +4,20 @@ ROOT=r'C:\Users\alina\Desktop\Blender_AI\TABLE_02_PREPPY'
 bpy.ops.wm.open_mainfile(filepath=os.path.join(ROOT,'PREPPY_TABLE_02_blenderkit.blend'))
 scene=bpy.context.scene
 objs=[o for o in scene.objects if o.type=='MESH' and not any(x in o.name.lower() for x in ['ground','stage'])]
-# Adjust leg-tip contact by 1 mm, preserving overall table geometry.
-for o in objs:
- if o.name.startswith('SOLID_BEECH_LEG'):
+# Correct the measured 1 mm discrepancy in the saved prototype without
+# modifying X/Y or changing any structural proportions.
+world_vertices=[(o,v,o.matrix_world@v.co) for o in objs for v in o.data.vertices]
+zmin=min(w.z for _,_,w in world_vertices)
+zmax=max(w.z for _,_,w in world_vertices)
+if abs((zmax-zmin)-.759) < .004:
+ for o in objs:
   inv=o.matrix_world.inverted()
   for v in o.data.vertices:
-   w=o.matrix_world @ v.co
-   if w.z<0.03:
-    w.z-=0.001
-    v.co=inv @ w
+   w=o.matrix_world@v.co
+   w.z=(w.z-zmin)*(.760/(zmax-zmin))
+   v.co=inv@w
+  o.data.update()
+ bpy.context.view_layer.update()
 mat=next(m for m in bpy.data.materials if m.name.startswith('TABLE_02_PREPPY |') and m.use_nodes)
 nodes=mat.node_tree.nodes
 tex=next(n for n in nodes if n.type=='TEX_IMAGE' and n.image and 'diffuse' in n.image.name.lower())
@@ -44,7 +49,7 @@ mat.name='PREPPY_MDF_WALNUT_VENEER'
 for ob in scene.objects:ob.select_set(False)
 for ob in objs:ob.select_set(True)
 bpy.context.view_layer.objects.active=objs[0]
-coords=[o.matrix_world@Vector(c) for o in objs for c in o.bound_box]
+coords=[o.matrix_world@v.co for o in objs for v in o.data.vertices]
 bb_min=[min(v[i] for v in coords) for i in range(3)]
 bb_max=[max(v[i] for v in coords) for i in range(3)]
 dims=[bb_max[i]-bb_min[i] for i in range(3)]
