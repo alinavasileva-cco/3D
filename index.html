@@ -94,8 +94,8 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 <button type="button" id="toggleSettings" class="panel-toggle" aria-controls="panel" aria-expanded="true" aria-label="Свернуть панель управления">
   <span class="toggle-icon" aria-hidden="true">☰</span><span>Настройки</span><span id="settingsChevron" aria-hidden="true">▴</span>
 </button>
-<button type="button" id="toggleCatalog" class="panel-toggle" aria-controls="inspector" aria-expanded="true" aria-label="Свернуть панель ковров и материалов">
-  <span class="toggle-icon" aria-hidden="true">▤</span><span>Ковры</span><span id="catalogChevron" aria-hidden="true">▴</span>
+<button type="button" id="toggleCatalog" class="panel-toggle" aria-controls="inspector" aria-expanded="true" aria-label="Свернуть каталог мебели и ковров">
+  <span class="toggle-icon" aria-hidden="true">▤</span><span>Мебель</span><span id="catalogChevron" aria-hidden="true">▴</span>
 </button>
 <div class="panel" id="panel">
 <div class="eyebrow">THE CASE · 3D INTERIOR</div>
@@ -115,15 +115,39 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 <div id="status" style="display:none" role="status" aria-live="polite"><span class="dot" id="dot"></span><span id="statusText">Загрузка 3D-модели…</span></div>
 <div id="progress" style="display:none"><div id="fill"></div></div>
 <div id="toolbar"><a href="cabinet_photo.png" target="_blank" rel="noopener">Фоторендер ↗</a><button id="full">На весь экран ⛶</button></div>
-<aside id="inspector" aria-label="Отделка комнаты">
-<div id="rugCard" aria-label="Переключение ковров Sanderson и TKANO"><div class="rug-select" role="group" aria-label="Выбрать ковёр"><button class="active" data-rug-variant="sanderson" aria-pressed="true">Sanderson · 140×200</button><button data-rug-variant="tkano" aria-pressed="false">TKANO · 160×230</button></div>
+<aside id="inspector" aria-label="Каталог мебели и ковров">
+<div class="ins-head" style="margin-bottom:9px">Выбор предметов</div>
+<div class="catalog-tabs" role="tablist" aria-label="Категории предметов">
+ <button type="button" role="tab" id="tabRugs" aria-controls="rugCategory" aria-selected="true" data-catalog-tab="rugs">Ковры</button>
+ <button type="button" role="tab" id="tabFurniture" aria-controls="furnitureCategory" aria-selected="false" data-catalog-tab="furniture">Столы</button>
+</div>
+<div id="rugCategory" role="tabpanel" aria-labelledby="tabRugs">
+<div id="rugCard" aria-label="Выбор и включение ковра">
+<label class="rug-check"><input id="rugVisible" type="checkbox" checked><span>Показать ковёр в комнате</span></label>
+<div class="rug-select" role="group" aria-label="Выбор ковра для комнаты">
+<button class="active" data-rug-variant="sanderson" aria-pressed="true" type="button">
+ <img src="rug-sanderson-original.jpg" alt="" loading="lazy"><span class="rug-mini-name">Sanderson<br>140 × 200</span><b class="rug-mini-price">65 899 ₽</b>
+</button>
+<button data-rug-variant="tkano" aria-pressed="false" type="button">
+ <img src="assets/tkano-original.webp" alt="" loading="lazy"><span class="rug-mini-name">TKANO<br>160 × 230</span><b class="rug-mini-price">18 145 ₽</b>
+</button>
+</div>
+<p class="rug-hint">Ковёр можно убрать совсем. Выбранный вариант сохраняется, даже если он выключен.</p>
 <div class="caption">КОВЁР · 3D-МОДЕЛЬ BLENDERKIT</div>
 <a id="rugSourceLink" href="https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/" target="_blank" rel="noopener noreferrer"><img id="rugSourcePhoto" src="rug-sanderson-original.jpg" alt="Оригинальное фото ковра Sanderson Matmi Avocado 148107" loading="lazy"></a>
 <h3 id="rugProductName">Sanderson · Matmi Avocado</h3><div id="rugSku" class="caption">148107 · 140 × 200 см</div>
 <div class="price" id="rugPriceValue">65 899 ₽</div><div id="rugSeller" class="caption">PaprikaDesign · цена проверена 20.11.2026</div>
 <a id="rugShopLink" class="shop" href="https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/" target="_blank" rel="noopener noreferrer">Перейти к товару ↗</a>
 <a id="rugComparison" href="tkano-tea.html" target="_blank" rel="noopener">Сравнить TKANO с оригиналом в 3D</a><div class="actions"><button id="rugTop" disabled>Вид сверху</button><button id="rugRotate" disabled>Повернуть +15°</button><button id="rugReset" style="grid-column:span 2" disabled>Сбросить положение</button></div>
-<div id="rugMessage" role="status">Загрузка 3D-ковра…</div><div class="caption">Тяни ковёр мышью или пальцем: он двигается по полу и не выходит за стены.</div></div>
+<div id="rugMessage" role="status">Загрузка 3D-ковра…</div><div class="caption">Включённый ковёр можно двигать и поворачивать, не меняя остальную комнату.</div></div>
+</div>
+<div id="furnitureCategory" role="tabpanel" aria-labelledby="tabFurniture" hidden>
+ <div class="furniture-preview"><strong>Столы: отдельные 3D-модели</strong>
+ <p>Они ещё не установлены в сцену кабинета, поэтому не считаются выбранными и не включены в итоговую сумму.</p>
+ <div class="furniture-view"><span>Стол № 1</span><a href="table-01-v4.html" target="_blank" rel="noopener">Открыть 3D</a></div>
+ <div class="furniture-view"><span>Preppy · iModern</span><a href="table-02.html" target="_blank" rel="noopener">Открыть 3D</a></div>
+ </div>
+</div>
 <div class="ins-head">Материалы комнаты</div>
 <div class="mat-card"><div class="mat-title">Пол · BRONIX Kvarr Ёлка Amber</div>
 <div class="mat-value">Тёплый янтарный дуб · SPC-покрытие · артикул производителя 05001</div>
@@ -136,13 +160,27 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 <div id="hoverMaterial" class="mat-value">Материал отобразится здесь</div>
 <div id="hoverProperties" class="ins-sub"></div></div></aside>
 <div id="hud">Колёсико · поворот мышью · W A S D · 4 вида камеры</div>
+<div id="budgetBar" role="region" aria-label="Стоимость выбранных предметов">
+ <div class="budget-amount"><small>Итого выбранное · <span id="budgetCount">1 товар</span></small><strong id="budgetTotal">65 899 ₽</strong></div>
+ <button type="button" id="openCart" aria-haspopup="dialog" aria-controls="cartBackdrop">Корзина <span id="cartBadge">1</span></button>
+</div>
+<div id="cartBackdrop" hidden>
+ <div id="cartDim" aria-hidden="true"></div>
+ <section id="cartDialog" role="dialog" aria-modal="true" aria-label="Корзина выбранных предметов">
+  <header><h2>Выбрано для кабинета</h2><button type="button" id="closeCart" aria-label="Закрыть корзину">✕</button></header>
+  <div id="cartItems" aria-live="polite"></div>
+  <div class="cart-summary"><span>Итого</span><strong id="cartTotal">65 899 ₽</strong></div>
+  <p class="cart-disclaimer">Расчёт включает только выбранные товары с подтверждённой ценой. Мебель, ещё не подключённая к выбору в комнате, и отделка не учитываются. Цены могут изменяться.</p>
+  <button type="button" id="clearCart">Убрать выбранный ковёр</button>
+ </section>
+</div>
 <script>
 /* Panel interaction is independent of 3D / Three.js loading. */
 (function () {
  const mobile = window.matchMedia('(max-width: 850px)');
  const config = [
   {id:'panel',button:'toggleSettings',chevron:'settingsChevron',name:'настроек'},
-  {id:'inspector',button:'toggleCatalog',chevron:'catalogChevron',name:'ковров и материалов'}
+  {id:'inspector',button:'toggleCatalog',chevron:'catalogChevron',name:'мебели и ковров'}
  ];
  function setOpen(item,isOpen){
   const panel=document.getElementById(item.id),button=document.getElementById(item.button);
