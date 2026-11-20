@@ -58,7 +58,7 @@
 #canvas{touch-action:none}
 @media(max-width:550px){#inspector{width:198px;max-height:45vh}#rugCard img{max-height:100px}#rugCard{padding:8px}#rugCard .price{font-size:17px}}
 
-</style>
+.rug-select{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 12px}.rug-select button{padding:10px 5px;border-radius:7px;background:#ffffff13;color:#fff;border:1px solid #ffffff46;font:inherit;font-size:11px;cursor:pointer}.rug-select button.active{background:#d4ebdb;color:#143b24;border-color:#d4ebdb}#rugComparison{display:none;text-align:center;padding:9px;margin:8px 0;color:#d6eedd;border:1px solid #d6eedd77;border-radius:8px;font-size:11px;text-decoration:none}</style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"}}</script>
 </head>
 <body>
@@ -82,13 +82,13 @@
 <div id="progress" style="display:none"><div id="fill"></div></div>
 <div id="toolbar"><a href="cabinet_photo.png" target="_blank" rel="noopener">Фоторендер ↗</a><button id="full">На весь экран ⛶</button></div>
 <aside id="inspector" aria-label="Отделка комнаты">
-<div id="rugCard" aria-label="Ковёр Sanderson, оригинал и управление">
+<div id="rugCard" aria-label="Переключение ковров Sanderson и TKANO"><div class="rug-select" role="group" aria-label="Выбрать ковёр"><button class="active" data-rug-variant="sanderson" aria-pressed="true">Sanderson · 140×200</button><button data-rug-variant="tkano" aria-pressed="false">TKANO · 160×230</button></div>
 <div class="caption">КОВЁР · 3D-МОДЕЛЬ BLENDERKIT</div>
-<a href="https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/" target="_blank" rel="noopener noreferrer"><img src="rug-sanderson-original.jpg" alt="Оригинальное фото ковра Sanderson Matmi Avocado 148107" loading="lazy"></a>
-<h3>Sanderson · Matmi Avocado</h3><div class="caption">148107 · 140 × 200 см</div>
-<div class="price">65 899 ₽</div><div class="caption">PaprikaDesign · цена проверена 20.11.2026</div>
-<a class="shop" href="https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/" target="_blank" rel="noopener noreferrer">Перейти к товару ↗</a>
-<div class="actions"><button id="rugTop" disabled>Вид сверху</button><button id="rugRotate" disabled>Повернуть +15°</button><button id="rugReset" style="grid-column:span 2" disabled>Сбросить положение</button></div>
+<a id="rugSourceLink" href="https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/" target="_blank" rel="noopener noreferrer"><img id="rugSourcePhoto" src="rug-sanderson-original.jpg" alt="Оригинальное фото ковра Sanderson Matmi Avocado 148107" loading="lazy"></a>
+<h3 id="rugProductName">Sanderson · Matmi Avocado</h3><div id="rugSku" class="caption">148107 · 140 × 200 см</div>
+<div class="price" id="rugPriceValue">65 899 ₽</div><div id="rugSeller" class="caption">PaprikaDesign · цена проверена 20.11.2026</div>
+<a id="rugShopLink" class="shop" href="https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/" target="_blank" rel="noopener noreferrer">Перейти к товару ↗</a>
+<a id="rugComparison" href="tkano-tea.html" target="_blank" rel="noopener">Сравнить TKANO с оригиналом в 3D</a><div class="actions"><button id="rugTop" disabled>Вид сверху</button><button id="rugRotate" disabled>Повернуть +15°</button><button id="rugReset" style="grid-column:span 2" disabled>Сбросить положение</button></div>
 <div id="rugMessage" role="status">Загрузка 3D-ковра…</div><div class="caption">Тяни ковёр мышью или пальцем: он двигается по полу и не выходит за стены.</div></div>
 <div class="ins-head">Материалы комнаты</div>
 <div class="mat-card"><div class="mat-title">Пол · BRONIX Kvarr Ёлка Amber</div>
@@ -304,14 +304,14 @@ setView('entrance',true);
 const loader=new GLTFLoader();
 
 /* Sanderson Matmi Avocado · independent movable BlenderKit GLB */
-const rugFiles=['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'];
-const rugInit={x:1.75,z:2.30,a:0},rugStorage='cabinet1_matmi148107_v1';
+let rugFiles=['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'];
+let rugInit={x:1.75,z:2.30,a:0},rugStorage='cabinet1_matmi148107_v1';
 const rugRay=new THREE.Raycaster(),rugMouse=new THREE.Vector2(),rugPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0),rugPoint=new THREE.Vector3();
-let rug=null,dragRug=null,rugFloorY=0;
+let rug=null,dragRug=null,rugFloorY=0,rugLoadVersion=0,rugKind='sanderson',rugHalfWidth=.7,rugHalfDepth=1;
 function rugMessage(s){document.getElementById('rugMessage').textContent=s}
 function rugFits(x,z,a){
  const c=Math.cos(a),s=Math.sin(a);
- for(const dx of [-.7,.7])for(const dz of [-1,1]){
+ for(const dx of [-rugHalfWidth,rugHalfWidth])for(const dz of [-rugHalfDepth,rugHalfDepth]){
   const px=x+dx*c-dz*s,pz=z+dx*s+dz*c;
   if(px<.09||px>3.27||pz<.09||pz>4.59||(pz>2.82&&px<.68))return false;
  }
@@ -362,7 +362,34 @@ document.getElementById('rugRotate').addEventListener('click',()=>{
   rugMessage('Поворот ограничен стенами — сдвинь ковёр к центру.');
 });
 document.getElementById('rugReset').addEventListener('click',()=>placeRug(rugInit.x,rugInit.z,rugInit.a));
+
+const rugVariants={
+sanderson:{w:1.4,d:2,files:['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'],storage:'cabinet1_matmi148107_v1',title:'Sanderson · Matmi Avocado',sku:'148107 · 140 × 200 см',price:'65 899 ₽',seller:'PaprikaDesign · цена проверена 20.11.2026',photo:'rug-sanderson-original.jpg',url:'https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/'},
+tkano:{w:1.6,d:2.3,files:['assets/tkano-tea.glb'],storage:'cabinet1_tkano_160x230_v1',title:'TKANO · Tea Plantation',sku:'TK22-DR0008 · 160 × 230 см · хлопок',price:'18 145 ₽',seller:'TKANO · цена проверена 20.11.2026',photo:'assets/tkano-original.webp',url:'https://tkano.ru/catalog/dekorativnyy-tekstil/kovry/kover-iz-khlopka-s-risunkom-tea-plantation-iz-kollektsii-terra_1/'}
+};
+function selectRug(id){
+ if(!rugVariants[id]||id===rugKind)return;
+ const previous=rug?{x:rug.position.x,z:rug.position.z,a:rug.rotation.y}:null;
+ if(rug){rugSave();scene.remove(rug);rug.traverse(o=>{if(o.isMesh){o.geometry?.dispose();(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m?.dispose())}});rug=null;}
+ const data=rugVariants[id];rugKind=id;rugHalfWidth=data.w/2;rugHalfDepth=data.d/2;
+ rugFiles=data.files;rugStorage=data.storage;
+ rugInit=previous&&rugFits(previous.x,previous.z,previous.a)?previous:{x:1.75,z:2.3,a:0};
+ document.querySelectorAll('[data-rug-variant]').forEach(b=>{const active=b.dataset.rugVariant===id;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
+ document.getElementById('rugProductName').textContent=data.title;
+ document.getElementById('rugSku').textContent=data.sku;
+ document.getElementById('rugPriceValue').textContent=data.price;
+ document.getElementById('rugSeller').textContent=data.seller;
+ document.getElementById('rugSourcePhoto').src=data.photo;document.getElementById('rugSourcePhoto').alt='Оригинальное фото '+data.title;
+ document.getElementById('rugSourceLink').href=data.url;document.getElementById('rugShopLink').href=data.url;
+ document.getElementById('rugComparison').style.display=id==='tkano'?'block':'none';
+ for(const btn of ['rugTop','rugRotate','rugReset'])document.getElementById(btn).disabled=true;
+ rugMessage('Загрузка 3D-ковра '+data.title+'…');
+ if(room)void loadRug();
+}
+document.querySelectorAll('[data-rug-variant]').forEach(b=>b.addEventListener('click',()=>selectRug(b.dataset.rugVariant)));
+
 async function loadRug(){
+ const version=++rugLoadVersion;
  try{
   const parts=await Promise.all(rugFiles.map(async f=>{
    const r=await fetch(f);if(!r.ok)throw new Error(f+': HTTP '+r.status);
@@ -370,9 +397,10 @@ async function loadRug(){
   }));
   const data=new Uint8Array(parts.reduce((n,p)=>n+p.length,0));let at=0;
   for(const part of parts){data.set(part,at);at+=part.length}
-  if(data.length!==7033840||String.fromCharCode(...data.slice(0,4))!=='glTF')throw new Error('GLB ковра повреждён');
+  if((rugKind==='sanderson'&&data.length!==7033840)||String.fromCharCode(...data.slice(0,4))!=='glTF')throw new Error('GLB ковра повреждён');
   const g=await loader.parseAsync(data.buffer,'');
-  rug=g.scene;rug.name='Sanderson Matmi 148107 | editable placement';
+  if(version!==rugLoadVersion)return;
+  rug=g.scene;rug.name=(rugKind==='tkano'?'TKANO Tea Plantation 160x230 | movable':'Sanderson Matmi 148107 | movable');
   rug.traverse(o=>{if(o.isMesh){
    o.castShadow=true;o.receiveShadow=true;
    for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m){m.side=THREE.DoubleSide;m.needsUpdate=true}
@@ -385,7 +413,7 @@ async function loadRug(){
   try{const saved=JSON.parse(localStorage.getItem(rugStorage));if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)&&Number.isFinite(saved.a)&&rugFits(saved.x,saved.z,saved.a))p=saved}catch(err){}
   placeRug(p.x,p.z,p.a,false);
   ['rugTop','rugRotate','rugReset'].forEach(id=>document.getElementById(id).disabled=false);
- }catch(e){console.error(e);rugMessage('Ошибка загрузки 3D-ковра: '+e.message)}
+ }catch(e){if(version!==rugLoadVersion)return;console.error(e);rugMessage('Ошибка загрузки 3D-ковра: '+e.message)}
 }
 
 const roomParts=['cabinet_room.part01.bin','cabinet_room.part02.bin','cabinet_room.part03.bin','cabinet_room.part04.bin','cabinet_room.part05.bin'];
