@@ -46,7 +46,7 @@ footer a,.link{color:#74513b;text-decoration:underline;text-underline-offset:3px
 <section class="panel">
 <div class="panelhead"><strong>01 / Оригинал</strong><small>Фотография продавца</small></div>
 <div class="media">
-<img id="original" alt="Оригинальный письменный стол Preppy из шпона ореха: три ящика и четыре деревянные ножки" src="https://imodern.ru/upload/resize_cache/iblock/cf4/1050_666_1/cf41218ec04bd696043ee112e96907b1.jpg">
+<img id="original" alt="Оригинальный письменный стол Preppy из шпона ореха: три ящика и четыре деревянные ножки" src="./preppy-original-main.jpg">
 <div id="original-error">Фотография не загрузилась.<p><a class="link" href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">Открыть оригинал на INMYROOM</a></p></div>
 </div>
 <div class="pills"><button id="photomain" class="active">Общий вид</button><button id="photodetail">Детали ящиков</button><a class="link" style="align-self:center;margin-left:auto;font-size:12px" href="https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta" target="_blank" rel="noopener">Карточка товара</a></div>
@@ -74,9 +74,10 @@ footer a,.link{color:#74513b;text-decoration:underline;text-underline-offset:3px
 <script>
 const im=document.getElementById('original'), er=document.getElementById('original-error');
 im.onerror=()=>{im.style.display='none';er.style.display='flex'};
+im.onload=()=>{er.style.display='none';im.style.display='block'};
 const sources={
- main:'https://imodern.ru/upload/resize_cache/iblock/cf4/1050_666_1/cf41218ec04bd696043ee112e96907b1.jpg',
- detail:'https://imodern.ru/upload/resize_cache/iblock/f5e/1050_666_1/f5e498ee3ef3b27b7c849f4ce66be3b8.jpg'
+ main:'./preppy-original-main.jpg',
+ detail:'./preppy-original-detail.jpg'
 };
 function usePhoto(key){er.style.display='none';im.style.display='block';im.src=sources[key];document.getElementById('photomain').classList.toggle('active',key==='main');document.getElementById('photodetail').classList.toggle('active',key==='detail');}
 document.getElementById('photomain').onclick=()=>usePhoto('main');
@@ -114,7 +115,7 @@ try{
   document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
  }
  document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));
- new GLTFLoader().load('./table-02.glb',gltf=>{
+ new GLTFLoader().load('./table-02.glb?v=20261120',gltf=>{
   model=gltf.scene;sc.add(model);
   const box=new THREE.Box3().setFromObject(model),sz=box.getSize(new THREE.Vector3());
   center=box.getCenter(new THREE.Vector3());span=Math.max(sz.x,sz.y,sz.z,.2);
