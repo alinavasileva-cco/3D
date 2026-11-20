@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EUREKA ERK-L60L-RB — оригинал / Cycles / 3D · проба V8</title>
+<style>
+:root{color-scheme:light;--ink:#191b1e;--muted:#70757b;--line:#dedede;--bg:#f5f5f3}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+header{max-width:1400px;margin:auto;padding:24px 28px 20px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.logo{text-decoration:none;color:var(--ink);font-weight:750;letter-spacing:.08em;font-size:12px}
+.micro{font-size:11px;font-weight:650;letter-spacing:.13em;text-transform:uppercase;color:#6e7379}
+h1{font-size:clamp(26px,3vw,40px);font-weight:570;letter-spacing:-.04em;line-height:1.13;margin:9px 0}
+.note{margin:6px 0 0;color:#646b71;max-width:750px;font-size:13px}
+a{color:#145fb4}
+.wrap{max-width:1400px;margin:0 auto;padding:0 28px 40px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:25px 0 18px}
+.tabs button,.orbitbtn{border:1px solid #d7dade;border-radius:8px;background:#fff;color:#202327;padding:10px 15px;cursor:pointer;font:inherit;font-size:13px}
+.tabs button.active{background:#212327;color:#fff;border-color:#212327}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:22px;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.photo-pair{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.frame{min-width:0;padding:14px;border-right:1px solid var(--line)}
+.frame:last-child{border-right:0}
+.frame .caption{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 11px;font-size:13px;font-weight:650}
+.frame .caption span:last-child{font-size:11px;color:#899099;font-weight:400}
+.frame img{width:100%;height:min(60vh,560px);min-height:320px;object-fit:contain;background:#eceeed;border-radius:5px;display:block}
+.details{padding:20px}
+.details img{width:100%;height:145px;object-fit:contain;background:#f3f4f4;border-radius:5px;margin:12px 0}
+.details dl{margin:10px 0}dt{font-size:11px;color:var(--muted);margin-top:14px}dd{margin:4px 0 0;font-size:14px}
+.warning{border-top:1px solid var(--line);margin-top:18px;padding-top:15px;color:#8e4c29;font-size:12px}
+#stage{height:min(70vh,640px);min-height:410px;position:relative;background:#ebedec;touch-action:none}
+#stage canvas{width:100%;height:100%;display:block}
+#loading{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;padding:20px;text-align:center;color:#4f5b61;font-size:14px}
+.orbitbar{padding:12px;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;background:#fff;border-top:1px solid var(--line)}
+.footer{max-width:1400px;margin:auto;padding:0 28px 30px;color:var(--muted);font-size:12px}
+.hidden{display:none!important}
+@media(max-width:900px){.main{grid-template-columns:1fr}.details{order:2}.details img{display:none}header{padding:17px 16px 8px}.wrap{padding:0 12px 20px}.photo-pair{grid-template-columns:1fr}.frame{border-right:0;border-bottom:1px solid var(--line)}.frame:last-child{border-bottom:0}.frame img{height:auto;min-height:0;max-height:450px}.tabs{margin:14px 0}.details{padding:15px}#stage{height:62vh;min-height:340px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"}}</script>
+</head><body>
+<header><div><a class="logo" href="./index.html">3D / КАБИНЕТ</a><div class="micro" style="margin-top:12px">Предмет 01 · Контрольная версия V8</div><h1>EUREKA ERK-L60L-RB</h1><p class="note">Rustic Brown · сравнение оригинальной фотографии и реального рендера Blender Cycles. Материал ещё не принят: рисунок и тон остаются приблизительными.</p></div><a href="./index.html" style="font-size:13px;text-decoration:none">Весь кабинет</a></header>
+<div class="wrap"><nav class="tabs" aria-label="Виды просмотра">
+<button type="button" class="active" data-tab="compare">Оригинал / рендер</button>
+<button type="button" data-tab="model">Вращать 3D-модель</button>
+<button type="button" data-tab="reference">Оригинальная фотография</button>
+</nav>
+<div class="main"><main class="panel">
+<section id="compare"><div class="photo-pair">
+<div class="frame"><div class="caption"><strong>Оригинал EUREKA</strong><span>Фото товара</span></div><img src="./table-v8/reference.jpg" alt="Оригинал EUREKA ERK-L60L-RB Rustic Brown"></div>
+<div class="frame"><div class="caption"><strong>Blender Cycles V8</strong><span>Фактический рендер</span></div><img src="./table-v8/cycles.png" alt="Рендер Blender Cycles V8 с исправленными материалами"></div>
+</div></section>
+<section id="model" class="hidden"><div id="stage"><div id="loading">Нажми «Вращать 3D-модель», чтобы загрузить 3D-файл.</div></div><div class="orbitbar">
+<button class="orbitbtn" id="btnIso">Три четверти</button><button class="orbitbtn" id="btnFront">Спереди</button><button class="orbitbtn" id="btnTop">Сверху</button><button class="orbitbtn" id="btnZoom">Весь стол</button></div></section>
+<section id="reference" class="hidden"><div class="frame"><div class="caption"><strong>Фото производителя</strong><span>Фактический товар</span></div><img src="./table-v8/reference.jpg" alt="Оригинал" style="height:70vh"></div></section>
+</main><aside class="panel details"><div class="micro">Исходный товар</div><img src="./table-v8/reference.jpg" alt="Eureka product">
+<dl><dt>Артикул</dt><dd>ERK-L60L-RB · левый угловой стол</dd><dt>Размеры столешницы</dt><dd>≈155,5 × 110 см; регулируемая высота</dd><dt>Материал в 3D</dt><dd>BlenderKit Golden Brown Rustic Oak (PBR) + имитация заводского рисунка</dd><dt>Металлическое основание</dt><dd>BlenderKit Black Powder Coat PBR</dd><dt>Версия сравнения</dt><dd>V8 · промежуточная, не утверждённая</dd></dl>
+<div class="warning"><strong>Открытые отличия:</strong> цвет и повторение патинированных пятен, ориентация древесного рисунка, передача матовости в веб-рендере. Проверка выполняется на фактическом GLB.</div>
+<p style="margin-top:18px"><a href="https://eurekaergonomic.ru/index.php?product_id=140&route=product/product" target="_blank" rel="noopener noreferrer">Открыть оригинальный товар</a></p></aside></div></div>
+<div class="footer">Сравниваются реальные файлы модели и фотография товара. 3D-визуализация не является утверждённой копией заводской текстуры. Текстуры 3D включены в GLB. GitHub Pages · пробная версия 20.11.2026.</div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+let loadingPromise=null,cam,controls,renderer,scene,model,center,radius=2;
+const stage=document.querySelector('#stage'),status=document.querySelector('#loading'),tabs=[...document.querySelectorAll('[data-tab]')];
+function show(tab){for(const b of tabs)b.classList.toggle('active',b.dataset.tab===tab);
+for(const id of ['compare','model','reference']) document.getElementById(id).classList.toggle('hidden',tab!==id);
+if(tab==='model') {if(!loadingPromise)loadingPromise=loadModel(); if(renderer)requestAnimationFrame(()=>{resize();render();});}}
+tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+const files=Array.from({length:12},(_,i)=>'./table-v8/part'+String(i).padStart(2,'0')+'.bin');
+async function loadModel(){
+try{
+status.textContent='Загрузка 3D-файла (16,5 МБ)…';
+let done=0;
+const arrays=await Promise.all(files.map(async url=>{
+ const response=await fetch(url,{cache:'force-cache'});
+ if(!response.ok)throw new Error('Не загрузился файл '+url+' ('+response.status+')');
+ const bytes=await response.arrayBuffer();done++;status.textContent='Загружено частей: '+done+' / '+files.length;return new Uint8Array(bytes);
+}));
+const n=arrays.reduce((s,a)=>s+a.length,0);
+if(n!==16517932)throw new Error('Размер GLB неверен: '+n);
+const bytes=new Uint8Array(n);let offset=0;for(const a of arrays){bytes.set(a,offset);offset+=a.length;}
+if(String.fromCharCode(...bytes.slice(0,4))!=='glTF')throw new Error('Неверный заголовок GLB');
+status.textContent='Проверка целостности и разбор GLB…';
+if(crypto?.subtle){const hash=await crypto.subtle.digest('SHA-256',bytes);
+const hex=Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+if(hex!=='e9e6867521a787338d36cbb922bb6245a32556cfaf0caf8d6fb6c29af012b1f9')throw new Error('Контрольная сумма GLB не совпала');}
+scene=new THREE.Scene();scene.background=new THREE.Color(0xe9ebec);
+cam=new THREE.PerspectiveCamera(42,1,.01,1000);
+renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;
+stage.appendChild(renderer.domElement);
+const hemi=new THREE.HemisphereLight(0xffffff,0x9ca5a6,2.3);scene.add(hemi);
+const key=new THREE.DirectionalLight(0xffffff,3.2);key.position.set(3,6,4);scene.add(key);
+const fill=new THREE.DirectionalLight(0xffffff,1.3);fill.position.set(-3,3,-2);scene.add(fill);
+const loader=new GLTFLoader();
+const gltf=await new Promise((resolve,reject)=>loader.parse(bytes.buffer,'',resolve,reject));
+model=gltf.scene;scene.add(model);
+const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
+center=bounds.getCenter(new THREE.Vector3());radius=Math.max(size.length(),1);
+controls=new OrbitControls(cam,renderer.domElement);controls.target.copy(center);
+controls.enableDamping=true;controls.dampingFactor=.06;controls.minDistance=radius*.3;controls.maxDistance=radius*5;
+view('iso');resize();status.classList.add('hidden');
+new ResizeObserver(resize).observe(stage);
+(function animate(){requestAnimationFrame(animate);if(!renderer)return;controls.update();render();})();
+}catch(e){status.classList.remove('hidden');status.innerHTML='<div style="max-width:420px"><strong>3D не открылся</strong><div style="margin-top:8px">'+String(e.message||e).replace(/[<>&]/g,'')+'</div><div style="font-size:12px;margin-top:10px">Оригинал и рендер доступны во вкладке «Оригинал / рендер».</div></div>';console.error(e);}
+}
+function resize(){if(!renderer)return;let w=stage.clientWidth,h=stage.clientHeight;cam.aspect=w/h;cam.updateProjectionMatrix();renderer.setSize(w,h,false);renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));}
+function render(){if(renderer&&cam&&scene)renderer.render(scene,cam);}
+function view(which){if(!cam||!controls)return;
+let x=center.x,y=center.y,z=center.z,d=radius*1.2;
+if(which==='top')cam.position.set(x,y+d,z+.001);
+else if(which==='front')cam.position.set(x,y+radius*.25,z+d);
+else cam.position.set(x+d*.8,y+d*.58,z+d*.95);
+cam.lookAt(center);controls.target.copy(center);controls.update();render();}
+document.getElementById('btnIso').onclick=()=>view('iso');
+document.getElementById('btnFront').onclick=()=>view('front');
+document.getElementById('btnTop').onclick=()=>view('top');
+document.getElementById('btnZoom').onclick=()=>view('iso');
+</script></body></html>
