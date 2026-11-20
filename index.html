@@ -458,7 +458,7 @@ const loader=new GLTFLoader();
 let rugFiles=['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'];
 let rugInit={x:1.75,z:2.30,a:0},rugStorage='cabinet1_matmi148107_v1';
 const rugRay=new THREE.Raycaster(),rugMouse=new THREE.Vector2(),rugPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0),rugPoint=new THREE.Vector3();
-let rug=null,dragRug=null,rugFloorY=0,rugLoadVersion=0,rugKind='sanderson',rugHalfWidth=.7,rugHalfDepth=1;
+let rug=null,dragRug=null,rugFloorY=0,rugLoadVersion=0,rugKind='sanderson',rugHalfWidth=.7,rugHalfDepth=1,rugEnabled=true;
 function rugMessage(s){document.getElementById('rugMessage').textContent=s}
 function rugFits(x,z,a){
  const c=Math.cos(a),s=Math.sin(a);
@@ -515,31 +515,130 @@ document.getElementById('rugRotate').addEventListener('click',()=>{
 document.getElementById('rugReset').addEventListener('click',()=>placeRug(rugInit.x,rugInit.z,rugInit.a));
 
 const rugVariants={
-sanderson:{w:1.4,d:2,files:['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'],storage:'cabinet1_matmi148107_v1',title:'Sanderson · Matmi Avocado',sku:'148107 · 140 × 200 см',price:'65 899 ₽',seller:'PaprikaDesign · цена проверена 20.11.2026',photo:'rug-sanderson-original.jpg',url:'https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/'},
-tkano:{w:1.6,d:2.3,files:['assets/tkano-tea.glb'],storage:'cabinet1_tkano_160x230_v1',title:'TKANO · Tea Plantation',sku:'TK22-DR0008 · 160 × 230 см · хлопок',price:'18 145 ₽',seller:'TKANO · цена проверена 20.11.2026',photo:'assets/tkano-original.webp',url:'https://tkano.ru/catalog/dekorativnyy-tekstil/kovry/kover-iz-khlopka-s-risunkom-tea-plantation-iz-kollektsii-terra_1/'}
+sanderson:{w:1.4,d:2,files:['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'],storage:'cabinet1_matmi148107_v1',title:'Sanderson · Matmi Avocado',sku:'148107 · 140 × 200 см',price:'65 899 ₽',amount:65899,seller:'PaprikaDesign · цена проверена 20.11.2026',photo:'rug-sanderson-original.jpg',url:'https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/'},
+tkano:{w:1.6,d:2.3,files:['assets/tkano-tea.glb'],storage:'cabinet1_tkano_160x230_v1',title:'TKANO · Tea Plantation',sku:'TK22-DR0008 · 160 × 230 см · хлопок',price:'18 145 ₽',amount:18145,seller:'TKANO · цена проверена 20.11.2026',photo:'assets/tkano-original.webp',url:'https://tkano.ru/catalog/dekorativnyy-tekstil/kovry/kover-iz-khlopka-s-risunkom-tea-plantation-iz-kollektsii-terra_1/'}
 };
-function selectRug(id){
- if(!rugVariants[id]||id===rugKind)return;
- const previous=rug?{x:rug.position.x,z:rug.position.z,a:rug.rotation.y}:null;
- if(rug){rugSave();scene.remove(rug);rug.traverse(o=>{if(o.isMesh){o.geometry?.dispose();(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m?.dispose())}});rug=null;}
- const data=rugVariants[id];rugKind=id;rugHalfWidth=data.w/2;rugHalfDepth=data.d/2;
- rugFiles=data.files;rugStorage=data.storage;
- rugInit=previous&&rugFits(previous.x,previous.z,previous.a)?previous:{x:1.75,z:2.3,a:0};
- document.querySelectorAll('[data-rug-variant]').forEach(b=>{const active=b.dataset.rugVariant===id;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
+
+const rugStateKey='cabinet1_rug_choice_visibility_v1';
+const formatPrice=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽';
+function persistRugChoice(){
+ try{localStorage.setItem(rugStateKey,JSON.stringify({id:rugKind,enabled:rugEnabled}))}catch(e){}
+}
+function clearRugModel(){
+ rugLoadVersion++;
+ if(dragRug){dragRug=null;controls.enabled=true;canvas.style.cursor=''}
+ if(rug){
+  rugSave();scene.remove(rug);
+  rug.traverse(o=>{if(!o.isMesh)return;o.geometry?.dispose();for(const m of (Array.isArray(o.material)?o.material:[o.material]))m?.dispose()});
+  rug=null;
+ }
+ for(const k of ['rugTop','rugRotate','rugReset'])document.getElementById(k).disabled=true;
+}
+function syncRugCard(){
+ const data=rugVariants[rugKind];
+ document.getElementById('rugVisible').checked=rugEnabled;
+ for(const b of document.querySelectorAll('[data-rug-variant]')){
+  const active=b.dataset.rugVariant===rugKind;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));
+ }
  document.getElementById('rugProductName').textContent=data.title;
  document.getElementById('rugSku').textContent=data.sku;
  document.getElementById('rugPriceValue').textContent=data.price;
  document.getElementById('rugSeller').textContent=data.seller;
- document.getElementById('rugSourcePhoto').src=data.photo;document.getElementById('rugSourcePhoto').alt='Оригинальное фото '+data.title;
- document.getElementById('rugSourceLink').href=data.url;document.getElementById('rugShopLink').href=data.url;
- document.getElementById('rugComparison').style.display=id==='tkano'?'block':'none';
- for(const btn of ['rugTop','rugRotate','rugReset'])document.getElementById(btn).disabled=true;
- rugMessage('Загрузка 3D-ковра '+data.title+'…');
- if(room)void loadRug();
+ document.getElementById('rugSourcePhoto').src=data.photo;
+ document.getElementById('rugSourcePhoto').alt='Оригинальное фото '+data.title;
+ document.getElementById('rugSourceLink').href=data.url;
+ document.getElementById('rugShopLink').href=data.url;
+ document.getElementById('rugComparison').style.display=rugKind==='tkano'?'block':'none';
+ renderCart();
 }
+function selectRug(id){
+ if(!rugVariants[id]||rugKind===id)return;
+ const previous=rug?{x:rug.position.x,z:rug.position.z,a:rug.rotation.y}:null;
+ clearRugModel();
+ const data=rugVariants[id];rugKind=id;rugHalfWidth=data.w/2;rugHalfDepth=data.d/2;
+ rugFiles=data.files;rugStorage=data.storage;
+ rugInit=previous&&rugFits(previous.x,previous.z,previous.a)?previous:{x:1.75,z:2.30,a:0};
+ persistRugChoice();syncRugCard();
+ if(rugEnabled){
+  rugMessage('Загрузка 3D-ковра '+data.title+'…');
+  if(room)void loadRug();
+ }else rugMessage('Ковёр выключен. Выбранный вариант сохранён.');
+}
+function setRugEnabled(yes){
+ const value=Boolean(yes);
+ if(value===rugEnabled)return;
+ rugEnabled=value;
+ if(!rugEnabled){
+  clearRugModel();
+  rugMessage('Ковёр убран из комнаты. Нажми галочку, чтобы вернуть его.');
+ }else{
+  rugMessage('Загрузка 3D-ковра '+rugVariants[rugKind].title+'…');
+  if(room)void loadRug();
+ }
+ persistRugChoice();syncRugCard();
+}
+function cartItemsSelected(){
+ return rugEnabled?[{id:'rug-'+rugKind,qty:1,category:'Ковёр',...rugVariants[rugKind]}]:[];
+}
+function renderCart(){
+ const items=cartItemsSelected();
+ const total=items.reduce((acc,item)=>acc+item.amount*item.qty,0);
+ const count=items.reduce((acc,item)=>acc+item.qty,0);
+ document.getElementById('budgetTotal').textContent=formatPrice(total);
+ document.getElementById('cartTotal').textContent=formatPrice(total);
+ document.getElementById('budgetCount').textContent=count===0?'0 товаров':count===1?'1 товар':count+' товара';
+ document.getElementById('cartBadge').textContent=String(count);
+ const list=document.getElementById('cartItems');list.replaceChildren();
+ if(!items.length){
+  const p=document.createElement('p');p.className='cart-empty';p.textContent='Корзина пуста. Включи ковёр и выбери его в каталоге — он появится здесь.';list.appendChild(p);
+ }
+ for(const item of items){
+  const row=document.createElement('div');row.className='cart-product';
+  const img=document.createElement('img');img.src=item.photo;img.alt=item.title;row.appendChild(img);
+  const body=document.createElement('div');row.appendChild(body);
+  const name=document.createElement('strong');name.textContent=item.title;body.appendChild(name);
+  const sku=document.createElement('small');sku.textContent=item.sku+' · 1 шт.';body.appendChild(sku);
+  const price=document.createElement('span');price.className='cart-price';price.textContent=formatPrice(item.amount);body.appendChild(price);
+  const link=document.createElement('a');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Карточка товара';body.appendChild(link);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>setRugEnabled(false));body.appendChild(remove);
+  list.appendChild(row);
+ }
+ document.getElementById('clearCart').disabled=count===0;
+}
+function openCart(){
+ document.getElementById('cartBackdrop').hidden=false;document.getElementById('closeCart').focus();
+}
+function closeCart(){
+ document.getElementById('cartBackdrop').hidden=true;document.getElementById('openCart').focus();
+}
+document.getElementById('openCart').addEventListener('click',openCart);
+document.getElementById('closeCart').addEventListener('click',closeCart);
+document.getElementById('cartDim').addEventListener('click',closeCart);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('cartBackdrop').hidden)closeCart()});
+document.getElementById('clearCart').addEventListener('click',()=>setRugEnabled(false));
+document.getElementById('rugVisible').addEventListener('change',e=>setRugEnabled(e.target.checked));
 document.querySelectorAll('[data-rug-variant]').forEach(b=>b.addEventListener('click',()=>selectRug(b.dataset.rugVariant)));
+for(const tab of document.querySelectorAll('[data-catalog-tab]')){
+ tab.addEventListener('click',()=>{
+  const rugs=tab.dataset.catalogTab==='rugs';
+  document.getElementById('rugCategory').hidden=!rugs;
+  document.getElementById('furnitureCategory').hidden=rugs;
+  document.getElementById('tabRugs').setAttribute('aria-selected',String(rugs));
+  document.getElementById('tabFurniture').setAttribute('aria-selected',String(!rugs));
+ });
+}
+try{
+ const saved=JSON.parse(localStorage.getItem(rugStateKey));
+ if(saved&&rugVariants[saved.id]){
+  rugKind=saved.id;rugEnabled=saved.enabled!==false;
+  const data=rugVariants[rugKind];rugFiles=data.files;rugStorage=data.storage;
+  rugHalfWidth=data.w/2;rugHalfDepth=data.d/2;
+ }
+}catch(e){}
+syncRugCard();
 
 async function loadRug(){
+ if(!rugEnabled)return;
  const version=++rugLoadVersion;
  try{
   const parts=await Promise.all(rugFiles.map(async f=>{
@@ -550,7 +649,7 @@ async function loadRug(){
   for(const part of parts){data.set(part,at);at+=part.length}
   if((rugKind==='sanderson'&&data.length!==7033840)||String.fromCharCode(...data.slice(0,4))!=='glTF')throw new Error('GLB ковра повреждён');
   const g=await loader.parseAsync(data.buffer,'');
-  if(version!==rugLoadVersion)return;
+  if(version!==rugLoadVersion||!rugEnabled)return;
   rug=g.scene;rug.name=(rugKind==='tkano'?'TKANO Tea Plantation 160x230 | movable':'Sanderson Matmi 148107 | movable');
   rug.traverse(o=>{if(o.isMesh){
    o.castShadow=true;o.receiveShadow=true;
@@ -597,7 +696,7 @@ loadRoom().then(gltf=>{
   if(/glass_|window_transparent|стекл/i.test(n)){obj.material=new THREE.MeshPhysicalMaterial({color:0xe1f2f1,metalness:0,roughness:.05,transparent:true,opacity:.10,depthWrite:false,side:THREE.DoubleSide});obj.castShadow=false;} else if(obj.material&&obj.material.isMeshStandardMaterial){obj.material.side=THREE.DoubleSide;obj.material.needsUpdate=true}
  });
  scene.add(room);createCeiling();setView('entrance',true);
- void loadRug();
+ if(rugEnabled)void loadRug();
  const qs=new URLSearchParams(location.search);
  setLightMode(qs.get('night')==='1'?'night':'day');
  const transparency=Math.max(0,Math.min(100,Number(qs.get('walls'))||0));
