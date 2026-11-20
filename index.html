@@ -58,11 +58,45 @@
 #canvas{touch-action:none}
 @media(max-width:550px){#inspector{width:198px;max-height:45vh}#rugCard img{max-height:100px}#rugCard{padding:8px}#rugCard .price{font-size:17px}}
 
-.rug-select{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 12px}.rug-select button{padding:10px 5px;border-radius:7px;background:#ffffff13;color:#fff;border:1px solid #ffffff46;font:inherit;font-size:11px;cursor:pointer}.rug-select button.active{background:#d4ebdb;color:#143b24;border-color:#d4ebdb}#rugComparison{display:none;text-align:center;padding:9px;margin:8px 0;color:#d6eedd;border:1px solid #d6eedd77;border-radius:8px;font-size:11px;text-decoration:none}</style>
+.rug-select{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 12px}.rug-select button{padding:10px 5px;border-radius:7px;background:#ffffff13;color:#fff;border:1px solid #ffffff46;font:inherit;font-size:11px;cursor:pointer}.rug-select button.active{background:#d4ebdb;color:#143b24;border-color:#d4ebdb}#rugComparison{display:none;text-align:center;padding:9px;margin:8px 0;color:#d6eedd;border:1px solid #d6eedd77;border-radius:8px;font-size:11px;text-decoration:none}
+/* Collapsible viewport panels — independent on desktop, single-panel on mobile */
+#panel[hidden],#inspector[hidden]{display:none!important}
+#panel{top:70px;max-height:calc(100dvh - 84px);z-index:8}
+#inspector{top:129px;max-height:calc(100dvh - 147px);z-index:9}
+#toolbar{top:70px}
+.panel-toggle{position:fixed;top:12px;z-index:25;display:flex;align-items:center;justify-content:center;gap:8px;
+min-height:39px;padding:9px 13px;border:1px solid #ffffff5c;border-radius:11px;
+background:#171d20e8;color:#f1f5f2;font:600 12px/1.2 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-action:manipulation}
+.panel-toggle:hover{background:#303b3b}
+.panel-toggle[aria-expanded="true"]{background:#d6e7dd;color:#21362c;border-color:#d6e7dd}
+.panel-toggle .toggle-icon{font-size:17px;line-height:1}
+#toggleSettings{left:22px}
+#toggleCatalog{right:22px}
+@media(max-width:850px){
+ #panel{top:58px;left:10px;max-height:calc(100dvh - 74px)}
+ #toolbar{top:59px;right:10px}
+ #toggleSettings{left:10px}
+ #toggleCatalog{right:10px}
+ #inspector{top:auto;bottom:54px;max-height:50dvh}
+ .panel-toggle{top:9px;min-height:37px;padding:8px 11px;font-size:11px}
+}
+@media(max-width:550px){
+ #inspector{top:auto;bottom:54px;max-height:55dvh;width:min(270px,calc(100vw - 20px))}
+ #panel{max-height:calc(100dvh - 72px)}
+}
+@media(prefers-reduced-motion:no-preference){.panel-toggle{transition:background .16s,color .16s}}
+</style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"}}</script>
 </head>
 <body>
 <canvas id="canvas"></canvas><div id="shade"></div>
+<button type="button" id="toggleSettings" class="panel-toggle" aria-controls="panel" aria-expanded="true" aria-label="Свернуть панель управления">
+  <span class="toggle-icon" aria-hidden="true">☰</span><span>Настройки</span><span id="settingsChevron" aria-hidden="true">▴</span>
+</button>
+<button type="button" id="toggleCatalog" class="panel-toggle" aria-controls="inspector" aria-expanded="true" aria-label="Свернуть панель ковров и материалов">
+  <span class="toggle-icon" aria-hidden="true">▤</span><span>Ковры</span><span id="catalogChevron" aria-hidden="true">▴</span>
+</button>
 <div class="panel" id="panel">
 <div class="eyebrow">THE CASE · 3D INTERIOR</div>
 <div class="title">КАБИНЕТ 1.0</div>
@@ -102,6 +136,33 @@
 <div id="hoverMaterial" class="mat-value">Материал отобразится здесь</div>
 <div id="hoverProperties" class="ins-sub"></div></div></aside>
 <div id="hud">Колёсико · поворот мышью · W A S D · 4 вида камеры</div>
+<script>
+/* Panel interaction is independent of 3D / Three.js loading. */
+(function () {
+ const mobile = window.matchMedia('(max-width: 850px)');
+ const config = [
+  {id:'panel',button:'toggleSettings',chevron:'settingsChevron',name:'настроек'},
+  {id:'inspector',button:'toggleCatalog',chevron:'catalogChevron',name:'ковров и материалов'}
+ ];
+ function setOpen(item,isOpen){
+  const panel=document.getElementById(item.id),button=document.getElementById(item.button);
+  panel.hidden=!isOpen;
+  button.setAttribute('aria-expanded',String(isOpen));
+  button.setAttribute('aria-label',(isOpen?'Свернуть':'Развернуть')+' панель '+item.name);
+  document.getElementById(item.chevron).textContent=isOpen?'▴':'▾';
+ }
+ for(const item of config){
+  setOpen(item,!mobile.matches);
+  document.getElementById(item.button).addEventListener('click',function(){
+   const wasOpen=!document.getElementById(item.id).hidden;
+   if(!wasOpen&&mobile.matches){
+    for(const other of config){if(other!==item)setOpen(other,false);}
+   }
+   setOpen(item,!wasOpen);
+  });
+ }
+})();
+</script>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
