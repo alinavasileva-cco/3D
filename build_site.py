@@ -106,6 +106,22 @@ def build() -> None:
                 raise RuntimeError(f"Cannot bundle the original Preppy photo: {exc}") from exc
             print(f"Optional Preppy detail image not available: {exc}")
 
+    # Exact Blender V5 export, transferred as checked binary pieces; no reprojection
+    # or geometry/material modifications in the website build.
+    preppy_parts = [ROOT / "preppy-v5" / f"part{i:02d}.bin" for i in range(9)]
+    for part in preppy_parts:
+        if not part.is_file():
+            raise FileNotFoundError(f"Missing Preppy V5 part: {part}")
+    preppy = b"".join(path.read_bytes() for path in preppy_parts)
+    preppy_size = 5_851_896
+    preppy_sha256 = "1fcd6b474f494f2f3f18b63b4e7689e0f356460a9b043f48258d0504cf458900"
+    if len(preppy) != preppy_size or hashlib.sha256(preppy).hexdigest() != preppy_sha256:
+        raise ValueError("Preppy V5 does not match Blender-verified export")
+    if preppy[:4] != b"glTF" or struct.unpack_from("<I", preppy, 8)[0] != len(preppy):
+        raise ValueError("Preppy V5 GLB header is invalid")
+    (OUT / "table-02.glb").write_bytes(preppy)
+    print(f"Verified Preppy V5 GLB: {len(preppy):,} bytes; SHA-256 {preppy_sha256}")
+
     (OUT / "cabinet_room.glb").write_bytes(model)
     # Assemble the separate photorealistic table HTML, without altering the room tour.
     import gzip
