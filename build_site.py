@@ -22,7 +22,10 @@ RUG_PARTS = [ROOT / f"rug-matmi.part{index:02d}.bin" for index in range(1, 6)]
 RUG_PHOTO = ROOT / "rug-sanderson-original.jpg"
 RUG_SIZE = 7_033_840
 RUG_SHA256 = "8e4b006a10f91da0251de0a5fe347513afea1341f2db967cab2b8a8c256ae538"
-EXTRA_FILES = [ROOT / "table-02.html", ROOT / "table-02.glb", *RUG_PARTS, RUG_PHOTO]
+EXTRA_FILES = [ROOT / "table-02.html", ROOT / "table-02.glb", *RUG_PARTS, RUG_PHOTO, ROOT / "tkano-tea.html"]
+TKANO_FILES = [ROOT / "assets" / "tkano-tea.glb", ROOT / "assets" / "tkano-original.webp"]
+TKANO_SIZE = 1_536_044
+TKANO_SHA256 = "5b823b003ab06e147528754963966d6ba76f5b072479665aec7e7bae72489ad4"
 EXPECTED_SIZE = 10_104_552
 EXPECTED_SHA256 = "1ba8304d90217b3c97f021cda9a4d7b2ce4e69716408549033ffde3685185648"
 
@@ -47,7 +50,7 @@ def validate_glb(data: bytes) -> tuple[int, int]:
 
 
 def build() -> None:
-    for path in [*FILES, *EXTRA_FILES, *PARTS]:
+    for path in [*FILES, *EXTRA_FILES, *PARTS, *TKANO_FILES]:
         if not path.is_file():
             raise FileNotFoundError(f"Missing source: {path.name}")
         if path.stat().st_size == 0:
@@ -66,11 +69,19 @@ def build() -> None:
         raise ValueError("Sanderson rug GLB invalid or checksum mismatch")
     if RUG_PHOTO.read_bytes()[:3] != bytes.fromhex("ffd8ff"):
         raise ValueError("Sanderson original photo invalid")
+    tkano = TKANO_FILES[0].read_bytes()
+    if len(tkano) != TKANO_SIZE or tkano[:4] != b"glTF" or hashlib.sha256(tkano).hexdigest() != TKANO_SHA256:
+        raise ValueError("TKANO 160x230 original design 3D model invalid")
+    tkano_photo = TKANO_FILES[1].read_bytes()
+    if tkano_photo[:4] != b"RIFF" or tkano_photo[8:12] != b"WEBP":
+        raise ValueError("TKANO official reference photo invalid")
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
-    for path in [*FILES, *EXTRA_FILES, *PARTS]:
-        shutil.copyfile(path, OUT / path.name)
+    for path in [*FILES, *EXTRA_FILES, *PARTS, *TKANO_FILES]:
+        dest = OUT / path.relative_to(ROOT)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, dest)
     (OUT / "cabinet_room.glb").write_bytes(model)
     # Assemble the separate photorealistic table HTML, without altering the room tour.
     import gzip
@@ -91,6 +102,7 @@ def build() -> None:
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")
     print(f"Verified Sanderson rug GLB: {len(rug):,} bytes")
+    print(f"Verified TKANO rug GLB: {len(tkano):,} bytes | SHA256: {TKANO_SHA256}")
     print(f"GitHub Pages output: {OUT} ({len(list(OUT.iterdir()))} files)")
 
 
