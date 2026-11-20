@@ -43,6 +43,21 @@
 @media(max-width:850px){#inspector{top:auto;right:8px;bottom:54px;width:220px;padding:10px;max-height:38vh;overflow-y:auto}#inspector .mat-card{padding:7px;margin:5px 0}}
 @media(max-width:550px){#inspector{width:170px;max-height:32vh}#inspector .mat-title{font-size:10px}#inspector .mat-value{font-size:9px}.panel{max-height:65vh}}
 
+
+#rugCard{background:#1b2523;border:1px solid #ffffff32;border-radius:12px;padding:12px;margin-bottom:16px}
+#rugCard img{display:block;width:100%;max-height:185px;object-fit:contain;background:#fff;border-radius:7px;margin:10px 0}
+#rugCard h3{font-size:14px;margin:6px 0 5px;color:#fff}
+#rugCard .caption{font-size:11px;color:#c2cbc7;line-height:1.5}
+#rugCard .price{font-size:22px;font-weight:700;color:#fff;margin:8px 0 0}
+#rugCard .shop{display:block;background:#cfe5d7;color:#19362a;border-radius:8px;padding:10px;text-align:center;text-decoration:none;font-size:12px;font-weight:700;margin:10px 0}
+#rugCard .shop:hover{background:#e9f3ec}
+#rugCard .actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#rugCard .actions button{background:#ffffff16;color:#fff;border:1px solid #ffffff33;border-radius:7px;padding:9px 4px;font:inherit;font-size:11px;cursor:pointer}
+#rugCard .actions button:disabled{opacity:.5;cursor:wait}
+#rugMessage{font-size:11px;line-height:1.5;color:#bfdcc9;margin-top:8px}
+#canvas{touch-action:none}
+@media(max-width:550px){#inspector{width:198px;max-height:45vh}#rugCard img{max-height:100px}#rugCard{padding:8px}#rugCard .price{font-size:17px}}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"}}</script>
 </head>
@@ -67,6 +82,14 @@
 <div id="progress" style="display:none"><div id="fill"></div></div>
 <div id="toolbar"><a href="cabinet_photo.png" target="_blank" rel="noopener">Фоторендер ↗</a><button id="full">На весь экран ⛶</button></div>
 <aside id="inspector" aria-label="Отделка комнаты">
+<div id="rugCard" aria-label="Ковёр Sanderson, оригинал и управление">
+<div class="caption">КОВЁР · 3D-МОДЕЛЬ BLENDERKIT</div>
+<a href="https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/" target="_blank" rel="noopener noreferrer"><img src="rug-sanderson-original.jpg" alt="Оригинальное фото ковра Sanderson Matmi Avocado 148107" loading="lazy"></a>
+<h3>Sanderson · Matmi Avocado</h3><div class="caption">148107 · 140 × 200 см</div>
+<div class="price">65 899 ₽</div><div class="caption">PaprikaDesign · цена проверена 20.11.2026</div>
+<a class="shop" href="https://paprikadesign.ru/shop/13170/kovyor-sanderson-matmi-avocado-148107-140x200/" target="_blank" rel="noopener noreferrer">Перейти к товару ↗</a>
+<div class="actions"><button id="rugTop" disabled>Вид сверху</button><button id="rugRotate" disabled>Повернуть +15°</button><button id="rugReset" style="grid-column:span 2" disabled>Сбросить положение</button></div>
+<div id="rugMessage" role="status">Загрузка 3D-ковра…</div><div class="caption">Тяни ковёр мышью или пальцем: он двигается по полу и не выходит за стены.</div></div>
 <div class="ins-head">Материалы комнаты</div>
 <div class="mat-card"><div class="mat-title">Пол · BRONIX Kvarr Ёлка Amber</div>
 <div class="mat-value">Тёплый янтарный дуб · SPC-покрытие · артикул производителя 05001</div>
@@ -279,6 +302,92 @@ camera.position.add(v);controls.target.add(v);animation=null;
 }
 setView('entrance',true);
 const loader=new GLTFLoader();
+
+/* Sanderson Matmi Avocado · independent movable BlenderKit GLB */
+const rugFiles=['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'];
+const rugInit={x:1.75,z:2.30,a:0},rugStorage='cabinet1_matmi148107_v1';
+const rugRay=new THREE.Raycaster(),rugMouse=new THREE.Vector2(),rugPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0),rugPoint=new THREE.Vector3();
+let rug=null,dragRug=null,rugFloorY=0;
+function rugMessage(s){document.getElementById('rugMessage').textContent=s}
+function rugFits(x,z,a){
+ const c=Math.cos(a),s=Math.sin(a);
+ for(const dx of [-.7,.7])for(const dz of [-1,1]){
+  const px=x+dx*c-dz*s,pz=z+dx*s+dz*c;
+  if(px<.09||px>3.27||pz<.09||pz>4.59||(pz>2.82&&px<.68))return false;
+ }
+ return true;
+}
+function rugSave(){if(rug)try{localStorage.setItem(rugStorage,JSON.stringify({x:rug.position.x,z:rug.position.z,a:rug.rotation.y}))}catch(e){}}
+function placeRug(x,z,a,persist=true){
+ if(!rug||!rugFits(x,z,a))return false;
+ rug.position.set(x,rugFloorY+.0012,z);rug.rotation.y=a;
+ rugMessage('X: '+x.toFixed(2)+' м · Z: '+z.toFixed(2)+' м · угол: '+Math.round(THREE.MathUtils.radToDeg(a))+'°');
+ if(persist)rugSave();return true;
+}
+function rugPointer(e){
+ const r=canvas.getBoundingClientRect();
+ rugMouse.set(((e.clientX-r.left)/r.width)*2-1,1-((e.clientY-r.top)/r.height)*2);
+ rugRay.setFromCamera(rugMouse,camera);
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(!rug||e.button!==0)return;
+ rugPointer(e);if(!rugRay.intersectObject(rug,true).length)return;
+ e.preventDefault();e.stopImmediatePropagation();controls.enabled=false;animation=null;
+ rugPlane.constant=-(rugFloorY+.0012);
+ const hit=rugRay.ray.intersectPlane(rugPlane,rugPoint);
+ dragRug={pointerId:e.pointerId,dx:hit?rug.position.x-hit.x:0,dz:hit?rug.position.z-hit.z:0};
+ canvas.style.cursor='grabbing';try{canvas.setPointerCapture(e.pointerId)}catch(err){}
+},true);
+canvas.addEventListener('pointermove',e=>{
+ if(dragRug&&e.pointerId===dragRug.pointerId){
+  e.preventDefault();e.stopImmediatePropagation();rugPointer(e);
+  const hit=rugRay.ray.intersectPlane(rugPlane,rugPoint);if(!hit)return;
+  const x=hit.x+dragRug.dx,z=hit.z+dragRug.dz,a=rug.rotation.y;
+  if(!placeRug(x,z,a,false))if(!placeRug(x,rug.position.z,a,false))placeRug(rug.position.x,z,a,false);
+  return;
+ }
+ if(rug&&!dragRug){rugPointer(e);canvas.style.cursor=rugRay.intersectObject(rug,true).length?'grab':''}
+},true);
+function stopRugDrag(e){
+ if(!dragRug||e.pointerId!==dragRug.pointerId)return;
+ e.stopImmediatePropagation();dragRug=null;controls.enabled=true;canvas.style.cursor='';rugSave();
+ try{canvas.releasePointerCapture(e.pointerId)}catch(err){}
+}
+canvas.addEventListener('pointerup',stopRugDrag,true);
+canvas.addEventListener('pointercancel',stopRugDrag,true);
+document.getElementById('rugTop').addEventListener('click',()=>setView('top'));
+document.getElementById('rugRotate').addEventListener('click',()=>{
+ if(!rug)return;
+ if(!placeRug(rug.position.x,rug.position.z,rug.rotation.y+Math.PI/12))
+  rugMessage('Поворот ограничен стенами — сдвинь ковёр к центру.');
+});
+document.getElementById('rugReset').addEventListener('click',()=>placeRug(rugInit.x,rugInit.z,rugInit.a));
+async function loadRug(){
+ try{
+  const parts=await Promise.all(rugFiles.map(async f=>{
+   const r=await fetch(f);if(!r.ok)throw new Error(f+': HTTP '+r.status);
+   return new Uint8Array(await r.arrayBuffer());
+  }));
+  const data=new Uint8Array(parts.reduce((n,p)=>n+p.length,0));let at=0;
+  for(const part of parts){data.set(part,at);at+=part.length}
+  if(data.length!==7033840||String.fromCharCode(...data.slice(0,4))!=='glTF')throw new Error('GLB ковра повреждён');
+  const g=await loader.parseAsync(data.buffer,'');
+  rug=g.scene;rug.name='Sanderson Matmi 148107 | editable placement';
+  rug.traverse(o=>{if(o.isMesh){
+   o.castShadow=true;o.receiveShadow=true;
+   for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m){m.side=THREE.DoubleSide;m.needsUpdate=true}
+  }});
+  const floorRay=new THREE.Raycaster(new THREE.Vector3(rugInit.x,6,rugInit.z),new THREE.Vector3(0,-1,0),0,12);
+  const floorHits=floorRay.intersectObjects(floors,true);
+  rugFloorY=floorHits.length?floorHits[0].point.y:0;
+  scene.add(rug);
+  let p=rugInit;
+  try{const saved=JSON.parse(localStorage.getItem(rugStorage));if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)&&Number.isFinite(saved.a)&&rugFits(saved.x,saved.z,saved.a))p=saved}catch(err){}
+  placeRug(p.x,p.z,p.a,false);
+  ['rugTop','rugRotate','rugReset'].forEach(id=>document.getElementById(id).disabled=false);
+ }catch(e){console.error(e);rugMessage('Ошибка загрузки 3D-ковра: '+e.message)}
+}
+
 const roomParts=['cabinet_room.part01.bin','cabinet_room.part02.bin','cabinet_room.part03.bin','cabinet_room.part04.bin','cabinet_room.part05.bin'];
 async function loadRoom(){
  let loaded=0;
@@ -309,6 +418,7 @@ loadRoom().then(gltf=>{
   if(/glass_|window_transparent|стекл/i.test(n)){obj.material=new THREE.MeshPhysicalMaterial({color:0xe1f2f1,metalness:0,roughness:.05,transparent:true,opacity:.10,depthWrite:false,side:THREE.DoubleSide});obj.castShadow=false;} else if(obj.material&&obj.material.isMeshStandardMaterial){obj.material.side=THREE.DoubleSide;obj.material.needsUpdate=true}
  });
  scene.add(room);createCeiling();setView('entrance',true);
+ void loadRug();
  const qs=new URLSearchParams(location.search);
  setLightMode(qs.get('night')==='1'?'night':'day');
  const transparency=Math.max(0,Math.min(100,Number(qs.get('walls'))||0));

@@ -18,7 +18,11 @@ OUT = ROOT / "dist"
 PARTS = [ROOT / f"cabinet_room.part{index:02d}.bin" for index in range(1, 6)]
 FILES = [ROOT / "index.html", ROOT / "cabinet_photo.png", ROOT / "forest_background.png"]
 # Add the Preppy viewer without modifying the previously validated room model.
-EXTRA_FILES = [ROOT / "table-02.html", ROOT / "table-02.glb"]
+RUG_PARTS = [ROOT / f"rug-matmi.part{index:02d}.bin" for index in range(1, 6)]
+RUG_PHOTO = ROOT / "rug-sanderson-original.jpg"
+RUG_SIZE = 7_033_840
+RUG_SHA256 = "8e4b006a10f91da0251de0a5fe347513afea1341f2db967cab2b8a8c256ae538"
+EXTRA_FILES = [ROOT / "table-02.html", ROOT / "table-02.glb", *RUG_PARTS, RUG_PHOTO]
 EXPECTED_SIZE = 10_104_552
 EXPECTED_SHA256 = "1ba8304d90217b3c97f021cda9a4d7b2ce4e69716408549033ffde3685185648"
 
@@ -57,6 +61,11 @@ def build() -> None:
                 raise ValueError(f"Invalid PNG: {png.name}")
     model = b"".join(part.read_bytes() for part in PARTS)
     nodes, meshes = validate_glb(model)
+    rug = b"".join(part.read_bytes() for part in RUG_PARTS)
+    if len(rug) != RUG_SIZE or rug[:4] != b"glTF" or hashlib.sha256(rug).hexdigest() != RUG_SHA256:
+        raise ValueError("Sanderson rug GLB invalid or checksum mismatch")
+    if RUG_PHOTO.read_bytes()[:3] != bytes.fromhex("ffd8ff"):
+        raise ValueError("Sanderson original photo invalid")
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
@@ -66,6 +75,7 @@ def build() -> None:
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")
+    print(f"Verified Sanderson rug GLB: {len(rug):,} bytes")
     print(f"GitHub Pages output: {OUT} ({len(list(OUT.iterdir()))} files)")
 
 
