@@ -109,6 +109,14 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 .furniture-view{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid #ffffff20}
 .furniture-view a{color:#cdebd6;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
 #inspector{max-height:calc(100dvh - 240px)}
+.table-card{margin-bottom:11px}
+.table-card .rug-check{margin:13px 0 6px}
+.table-controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
+.table-controls button{font:inherit;font-size:11px;padding:10px 7px;color:#f3f6f4;background:#ffffff18;border:1px solid #ffffff42;border-radius:8px;cursor:pointer}
+.table-controls button:disabled{opacity:.45;cursor:wait}
+#tableReset{grid-column:span 2}
+#tableMessage{font-size:11px;color:#c5e4d3;line-height:1.5;min-height:30px;overflow-wrap:anywhere}
+.cart-product .cart-placeholder{display:grid;place-items:center;width:69px;height:82px;border:1px solid #ffffff3c;background:#25382e;color:#d6f0db;border-radius:6px;font-weight:750;font-size:14px}
 /* Always visible budget and cart drawer */
 #budgetBar{position:fixed;z-index:26;right:22px;bottom:17px;width:320px;min-height:60px;display:flex;align-items:center;gap:10px;justify-content:space-between;padding:9px 11px 9px 15px;background:#17201ded;backdrop-filter:blur(16px);border:1px solid #ffffff3d;border-radius:14px;box-shadow:0 12px 30px #0006;color:#f9fbf9}
 .budget-amount{min-width:0;display:flex;flex-direction:column;gap:3px}.budget-amount small{font-size:10px;color:#bfcfc4;line-height:1.25}.budget-amount strong{font-size:19px;letter-spacing:-.03em;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -194,10 +202,21 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 <div id="rugMessage" role="status">Загрузка 3D-ковра…</div><div class="caption">Включённый ковёр можно двигать и поворачивать, не меняя остальную комнату.</div></div>
 </div>
 <div id="furnitureCategory" role="tabpanel" aria-labelledby="tabFurniture" hidden>
- <div class="furniture-preview"><strong>Столы: отдельные 3D-модели</strong>
- <p>Они ещё не установлены в сцену кабинета, поэтому не считаются выбранными и не включены в итоговую сумму.</p>
- <div class="furniture-view"><span>Стол № 1</span><a href="table-01-v4.html" target="_blank" rel="noopener">Открыть 3D</a></div>
- <div class="furniture-view"><span>Preppy · iModern</span><a href="table-02.html" target="_blank" rel="noopener">Открыть 3D</a></div>
+ <div class="furniture-preview table-card" id="tableCard" aria-label="Главный стол V4 — размещение в комнате">
+  <strong>Главный стол · модель V4</strong>
+  <label class="rug-check"><input id="tableVisible" type="checkbox"><span>Поставить стол в кабинет</span></label>
+  <p>Перемещай стол мышью или пальцем прямо по полу. Положение и угол сохраняются в браузере.</p>
+  <div class="table-controls">
+   <button id="tableTop" type="button" disabled>Вид сверху</button>
+   <button id="tableRotate" type="button" disabled>Повернуть +15°</button>
+   <button id="tableReset" type="button" disabled>Сбросить положение</button>
+  </div>
+  <div id="tableMessage" role="status" aria-live="polite">Стол пока не установлен.</div>
+  <div class="furniture-view"><span>Оригинал модели V4</span><a href="table-01-v4.html" target="_blank" rel="noopener">Открыть 3D</a></div>
+  <p>Цена исходного товара не подтверждена: стол отображается в корзине без стоимости.</p>
+ </div>
+ <div class="furniture-preview"><strong>Остальные модели</strong>
+  <div class="furniture-view"><span>Preppy · iModern</span><a href="table-02.html" target="_blank" rel="noopener">Открыть 3D</a></div>
  </div>
 </div>
 <div class="ins-head">Материалы комнаты</div>
@@ -223,7 +242,7 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
   <div id="cartItems" aria-live="polite"></div>
   <div class="cart-summary"><span>Итого</span><strong id="cartTotal">65 899 ₽</strong></div>
   <p class="cart-disclaimer">Расчёт включает только выбранные товары с подтверждённой ценой. Мебель, ещё не подключённая к выбору в комнате, и отделка не учитываются. Цены могут изменяться.</p>
-  <button type="button" id="clearCart">Убрать выбранный ковёр</button>
+  <button type="button" id="clearCart">Убрать все выбранные предметы</button>
  </section>
 </div>
 <script>
@@ -454,6 +473,153 @@ camera.position.add(v);controls.target.add(v);animation=null;
 setView('entrance',true);
 const loader=new GLTFLoader();
 
+/* Approved table V4: exact GLB extracted in build_site.py from embedded modelBytes.
+   Geometry, UVs, and materials are preserved. Only scene placement/rigid rotation
+   and uniform scale when needed to fit the room are applied. */
+const tableKey='cabinet1_table_v4_placement_v1';
+const tableDefault={x:1.75,z:2.32,a:0};
+let table=null,tableEnabled=false,tableDragging=null,tableLoading=null;
+let tableFloorY=0,tableHalfWidth=.75,tableHalfDepth=.4,tableScale=1;
+let tablePlacement={...tableDefault};
+const tableRay=new THREE.Raycaster(),tableMouse=new THREE.Vector2();
+const tablePlane=new THREE.Plane(new THREE.Vector3(0,1,0),0),tablePoint=new THREE.Vector3();
+function tableMessage(value){document.getElementById('tableMessage').textContent=value}
+function saveTable(){
+ try{localStorage.setItem(tableKey,JSON.stringify({enabled:tableEnabled,x:tablePlacement.x,z:tablePlacement.z,a:tablePlacement.a}))}catch(e){}
+}
+function tableFits(x,z,a){
+ const c=Math.cos(a),s=Math.sin(a);
+ for(const dx of [-tableHalfWidth,tableHalfWidth])for(const dz of [-tableHalfDepth,tableHalfDepth]){
+  const px=x+dx*c+dz*s,pz=z-dx*s+dz*c;
+  if(px<.10||px>3.25||pz<.12||pz>4.55||(pz>2.91&&px<.69))return false;
+ }
+ return true;
+}
+function placeTable(x,z,a,persist=true){
+ if(!table||!tableFits(x,z,a))return false;
+ table.position.set(x,tableFloorY+.008,z);table.rotation.y=a;
+ tablePlacement={x,z,a};
+ tableMessage('Стол установлен · X: '+x.toFixed(2)+' м · Z: '+z.toFixed(2)+' м · поворот: '+Math.round(THREE.MathUtils.radToDeg(a))+'°'+(tableScale!==1?' · масштаб '+tableScale.toFixed(2):''));
+ if(persist)saveTable();return true;
+}
+function tablePointer(e){
+ const r=canvas.getBoundingClientRect();
+ tableMouse.set((e.clientX-r.left)/r.width*2-1,1-(e.clientY-r.top)/r.height*2);
+ tableRay.setFromCamera(tableMouse,camera);
+}
+function releaseTableDrag(e){
+ if(!tableDragging||e.pointerId!==tableDragging.pointerId)return;
+ e.stopImmediatePropagation();tableDragging=null;controls.enabled=true;
+ canvas.style.cursor='';saveTable();
+ try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(!table?.visible||e.button!==0)return;
+ tablePointer(e);
+ if(!tableRay.intersectObject(table,true).length)return;
+ e.preventDefault();e.stopImmediatePropagation();
+ controls.enabled=false;animation=null;
+ tablePlane.constant=-(tableFloorY+.008);
+ const hit=tableRay.ray.intersectPlane(tablePlane,tablePoint);
+ tableDragging={pointerId:e.pointerId,dx:hit?table.position.x-hit.x:0,dz:hit?table.position.z-hit.z:0};
+ canvas.style.cursor='grabbing';try{canvas.setPointerCapture(e.pointerId)}catch(error){}
+},true);
+canvas.addEventListener('pointermove',e=>{
+ if(tableDragging&&tableDragging.pointerId===e.pointerId){
+  e.preventDefault();e.stopImmediatePropagation();tablePointer(e);
+  const hit=tableRay.ray.intersectPlane(tablePlane,tablePoint);
+  if(!hit)return;
+  const x=hit.x+tableDragging.dx,z=hit.z+tableDragging.dz,a=table.rotation.y;
+  if(!placeTable(x,z,a,false))
+   if(!placeTable(x,table.position.z,a,false))placeTable(table.position.x,z,a,false);
+  return;
+ }
+ if(table?.visible){
+  tablePointer(e);
+  if(tableRay.intersectObject(table,true).length){
+   canvas.style.cursor='grab';e.stopImmediatePropagation();return;
+  }
+ }
+},true);
+canvas.addEventListener('pointerup',releaseTableDrag,true);
+canvas.addEventListener('pointercancel',releaseTableDrag,true);
+function syncTableButtons(){
+ const ready=Boolean(table&&tableEnabled);
+ for(const id of ['tableTop','tableRotate','tableReset'])document.getElementById(id).disabled=!ready;
+ document.getElementById('tableVisible').checked=tableEnabled;
+}
+async function loadTable(){
+ if(table){table.visible=tableEnabled;syncTableButtons();return;}
+ if(tableLoading)return tableLoading;
+ tableMessage('Загрузка оригинальной модели V4…');
+ tableLoading=(async()=>{
+  try{
+   const response=await fetch('table-01-v4.glb');
+   if(!response.ok)throw new Error('HTTP '+response.status);
+   const data=await response.arrayBuffer();
+   if(String.fromCharCode(...new Uint8Array(data,0,4))!=='glTF')throw new Error('неверный формат модели');
+   const gltf=await loader.parseAsync(data,'');
+   const bounds=new THREE.Box3().setFromObject(gltf.scene);
+   const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+   if(bounds.isEmpty()||!Number.isFinite(size.x)||!Number.isFinite(size.y)||!Number.isFinite(size.z)||size.y<=0)throw new Error('нет корректной геометрии стола');
+   // Do not distort proportions. Shrink uniformly only if the raw export is larger than the room.
+   tableScale=Math.min(1,2.45/Math.max(size.x,.001),2.45/Math.max(size.z,.001),1.25/Math.max(size.y,.001));
+   const group=new THREE.Group();group.name='Главный стол V4 | перемещаемый';
+   gltf.scene.position.set(-center.x,-bounds.min.y,-center.z);
+   group.scale.setScalar(tableScale);group.add(gltf.scene);
+   tableHalfWidth=size.x*tableScale/2;tableHalfDepth=size.z*tableScale/2;
+   group.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+   const floorRay=new THREE.Raycaster(new THREE.Vector3(tableDefault.x,6,tableDefault.z),new THREE.Vector3(0,-1,0),0,12);
+   const ground=floorRay.intersectObjects(floors,true);
+   tableFloorY=ground.length?ground[0].point.y:0;
+   table=group;scene.add(table);
+   const positions=[tablePlacement,tableDefault,{x:1.68,z:1.85,a:0},{x:1.70,z:2.7,a:0}];
+   let placed=false;
+   for(const p of positions){if(placeTable(p.x,p.z,p.a,false)){placed=true;break}}
+   if(!placed)throw new Error('габариты модели не позволяют разместить её внутри комнаты');
+   table.visible=tableEnabled;syncTableButtons();saveTable();
+   if(!tableEnabled)tableMessage('Стол выключен. Положение сохранено.');
+  }catch(error){
+   console.error(error);tableMessage('Не удалось загрузить 3D-стол: '+String(error.message||error));
+   tableEnabled=false; if(table){table.visible=false;}syncTableButtons();saveTable();renderCart();
+  }
+ })().finally(()=>{tableLoading=null;});
+ return tableLoading;
+}
+function setTableEnabled(yes){
+ tableEnabled=Boolean(yes);
+ if(!tableEnabled&&tableDragging){
+  tableDragging=null;controls.enabled=true;canvas.style.cursor='';
+ }
+ if(table)table.visible=tableEnabled;
+ if(tableEnabled){
+  if(table){placeTable(tablePlacement.x,tablePlacement.z,tablePlacement.a,false)}
+  else if(room)void loadTable();
+  else tableMessage('Загрузка комнаты перед установкой стола…');
+ }else tableMessage('Стол убран из комнаты. Положение сохранено.');
+ syncTableButtons();saveTable();renderCart();
+}
+try{
+ const stored=JSON.parse(localStorage.getItem(tableKey));
+ if(stored&&typeof stored==='object'){
+  tableEnabled=stored.enabled===true;
+  if([stored.x,stored.z,stored.a].every(Number.isFinite))tablePlacement={x:stored.x,z:stored.z,a:stored.a};
+ }
+}catch(error){}
+syncTableButtons();
+document.getElementById('tableVisible').addEventListener('change',e=>setTableEnabled(e.target.checked));
+document.getElementById('tableTop').addEventListener('click',()=>setView('top'));
+document.getElementById('tableRotate').addEventListener('click',()=>{
+ if(!table)return;
+ if(!placeTable(table.position.x,table.position.z,table.rotation.y+Math.PI/12))
+  tableMessage('Поворот ограничен стенами — сдвинь стол к центру.');
+});
+document.getElementById('tableReset').addEventListener('click',()=>{
+ if(!table)return;
+ if(!placeTable(tableDefault.x,tableDefault.z,tableDefault.a))
+  tableMessage('Центральная позиция для текущих размеров недоступна.');
+});
+
 /* Sanderson Matmi Avocado · independent movable BlenderKit GLB */
 let rugFiles=['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'];
 let rugInit={x:1.75,z:2.30,a:0},rugStorage='cabinet1_matmi148107_v1';
@@ -578,11 +744,13 @@ function setRugEnabled(yes){
  persistRugChoice();syncRugCard();
 }
 function cartItemsSelected(){
- return rugEnabled?[{id:'rug-'+rugKind,qty:1,category:'Ковёр',...rugVariants[rugKind]}]:[];
+ const chosen=rugEnabled?[{id:'rug-'+rugKind,qty:1,category:'Ковёр',...rugVariants[rugKind]}]:[];
+ if(tableEnabled)chosen.push({id:'table-01-v4',qty:1,category:'Стол',title:'Главный стол · V4',sku:'Оригинальная 3D-модель V4',amount:null,photo:null,url:'table-01-v4.html'});
+ return chosen;
 }
 function renderCart(){
  const items=cartItemsSelected();
- const total=items.reduce((acc,item)=>acc+item.amount*item.qty,0);
+ const total=items.reduce((acc,item)=>acc+(Number.isFinite(item.amount)?item.amount*item.qty:0),0);
  const count=items.reduce((acc,item)=>acc+item.qty,0);
  document.getElementById('budgetTotal').textContent=formatPrice(total);
  document.getElementById('cartTotal').textContent=formatPrice(total);
@@ -590,17 +758,18 @@ function renderCart(){
  document.getElementById('cartBadge').textContent=String(count);
  const list=document.getElementById('cartItems');list.replaceChildren();
  if(!items.length){
-  const p=document.createElement('p');p.className='cart-empty';p.textContent='Корзина пуста. Включи ковёр и выбери его в каталоге — он появится здесь.';list.appendChild(p);
+  const p=document.createElement('p');p.className='cart-empty';p.textContent='Корзина пуста. Включи ковёр или стол в каталоге — они появятся здесь.';list.appendChild(p);
  }
  for(const item of items){
   const row=document.createElement('div');row.className='cart-product';
-  const img=document.createElement('img');img.src=item.photo;img.alt=item.title;row.appendChild(img);
+  if(item.photo){const img=document.createElement('img');img.src=item.photo;img.alt=item.title;row.appendChild(img)}
+  else{const placeholder=document.createElement('div');placeholder.className='cart-placeholder';placeholder.textContent='3D';row.appendChild(placeholder)}
   const body=document.createElement('div');row.appendChild(body);
   const name=document.createElement('strong');name.textContent=item.title;body.appendChild(name);
   const sku=document.createElement('small');sku.textContent=item.sku+' · 1 шт.';body.appendChild(sku);
-  const price=document.createElement('span');price.className='cart-price';price.textContent=formatPrice(item.amount);body.appendChild(price);
+  const price=document.createElement('span');price.className='cart-price';price.textContent=Number.isFinite(item.amount)?formatPrice(item.amount):'Цена не подтверждена';body.appendChild(price);
   const link=document.createElement('a');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Карточка товара';body.appendChild(link);
-  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>setRugEnabled(false));body.appendChild(remove);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>item.id==='table-01-v4'?setTableEnabled(false):setRugEnabled(false));body.appendChild(remove);
   list.appendChild(row);
  }
  document.getElementById('clearCart').disabled=count===0;
@@ -615,7 +784,7 @@ document.getElementById('openCart').addEventListener('click',openCart);
 document.getElementById('closeCart').addEventListener('click',closeCart);
 document.getElementById('cartDim').addEventListener('click',closeCart);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('cartBackdrop').hidden)closeCart()});
-document.getElementById('clearCart').addEventListener('click',()=>setRugEnabled(false));
+document.getElementById('clearCart').addEventListener('click',()=>{setRugEnabled(false);setTableEnabled(false)});
 document.getElementById('rugVisible').addEventListener('change',e=>setRugEnabled(e.target.checked));
 document.querySelectorAll('[data-rug-variant]').forEach(b=>b.addEventListener('click',()=>selectRug(b.dataset.rugVariant)));
 for(const tab of document.querySelectorAll('[data-catalog-tab]')){
@@ -697,6 +866,7 @@ loadRoom().then(gltf=>{
  });
  scene.add(room);createCeiling();setView('entrance',true);
  if(rugEnabled)void loadRug();
+ if(tableEnabled)void loadTable();
  const qs=new URLSearchParams(location.search);
  setLightMode(qs.get('night')==='1'?'night':'day');
  const transparency=Math.max(0,Math.min(100,Number(qs.get('walls'))||0));
