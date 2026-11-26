@@ -6,7 +6,9 @@ No external Python packages needed.
 """
 from __future__ import annotations
 
+import base64
 import hashlib
+import re
 import json
 from pathlib import Path
 import shutil
@@ -133,15 +135,35 @@ def build() -> None:
     if len(packed_table) != 16613948 or hashlib.sha256(packed_table).hexdigest() != "d9a7c28bfb67f52938cdd26f2931200813e36fa337ed07bc5f60279746a5d903":
         raise ValueError("The table V4 transfer parts differ from the original")
     table_html = gzip.decompress(packed_table)
-    # Inspect the non-binary prefix near the original embedded model. No geometry is altered.
-    probe_at = table_html.find(b"modelBytes")
-    print("TABLE-V4 EMBEDDING:", repr(table_html[max(0, probe_at-240):probe_at+500][:740]) if probe_at >= 0 else "not found")
-    print("TABLE-V4 MODELS:", [(token, table_html.find(token)) for token in [b"modelBytes", b"base64,", b"data:model", b"glTF", b"model-viewer"]])
     if len(table_html) != 23698943 or hashlib.sha256(table_html).hexdigest() != "3e9d8f2ad6e521498e05df7ec7ba3dff2a952645c784546f6ae84ff55e2258b5":
         raise ValueError("The restored table V4 HTML does not match the browser-tested file")
     if b'modelBytes' not in table_html or b'<model-viewer' not in table_html:
         raise ValueError("The table V4 HTML lacks the embedded 3D model viewer")
     (OUT / "table-01-v4.html").write_bytes(table_html)
+    # The approved V4 viewer contains the original Blender glTF as base64.
+    # Decode it without touching geometry, meshes, materials, or textures;
+    # Three.js loads this same binary into the existing room scene.
+    embed = re.search(
+        rb'<script\\s+type="application/octet-stream"\\s+id="modelBytes"[^>]*>([A-Za-z0-9+/=\\s]+)</script>',
+        table_html, flags=re.IGNORECASE
+    )
+    if embed is None:
+        raise ValueError("Cannot locate the original V4 table GLB payload")
+    encoded = re.sub(rb"\\s+", b"", embed.group(1))
+    table_glb = base64.b64decode(encoded, validate=True)
+    if len(table_glb) < 20 or table_glb[:4] != b"glTF":
+        raise ValueError("V4 table model is not a GLB")
+    version, length = struct.unpack_from("<II", table_glb, 4)
+    if version != 2 or length != len(table_glb):
+        raise ValueError("V4 table GLB has invalid header or length")
+    table_json_length, table_chunk_type = struct.unpack_from("<I4s", table_glb, 12)
+    if table_chunk_type != b"JSON" or table_json_length + 20 > len(table_glb):
+        raise ValueError("V4 table GLB lacks valid JSON chunk")
+    table_gltf = json.loads(table_glb[20:20 + table_json_length])
+    if table_gltf.get("asset", {}).get("version") != "2.0":
+        raise ValueError("Unexpected V4 table glTF version")
+    (OUT / "table-01-v4.glb").write_bytes(table_glb)
+    print(f"Verified embedded V4 table GLB: {len(table_glb):,} bytes; SHA-256 {hashlib.sha256(table_glb).hexdigest()}; meshes {len(table_gltf.get('meshes', []))}")
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")
