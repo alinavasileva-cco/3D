@@ -146,6 +146,16 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
  #cartDialog{width:100vw;padding:16px}
  #hud{display:none}
 }
+
+/* Two independent 3D tables in the cabinet */
+.table-mini{display:grid;grid-template-columns:69px 1fr;gap:10px;align-items:center}
+.table-mini>img,.table-mini-placeholder{width:69px;height:68px;border-radius:7px;background:#fff;object-fit:contain}
+.table-mini-placeholder{display:grid;place-items:center;text-align:center;font-size:15px;font-weight:800;line-height:1.12;background:#25372e;color:#d6eada;border:1px solid #ffffff4a}
+.table-mini strong{display:block;line-height:1.38}
+.table-price-missing{font-size:11px;color:#d4d9d2;display:block;margin-top:5px}
+.table-mini small{font-size:10px;color:#a5c3b0;display:block;margin-top:3px}
+#preppyMessage{font-size:11px;color:#c5e4d3;line-height:1.5;min-height:30px;overflow-wrap:anywhere}
+#preppyReset{grid-column:span 2}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"}}</script>
 </head>
@@ -203,7 +213,7 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 </div>
 <div id="furnitureCategory" role="tabpanel" aria-labelledby="tabFurniture" hidden>
  <div class="furniture-preview table-card" id="tableCard" aria-label="Главный стол V4 — размещение в комнате">
-  <strong>Главный стол · модель V4</strong>
+  <div class="table-mini"><div class="table-mini-placeholder" aria-hidden="true">3D<br>V4</div><div><strong>Главный стол · модель V4</strong><span class="table-price-missing">Цена не подтверждена</span></div></div>
   <label class="rug-check"><input id="tableVisible" type="checkbox"><span>Поставить стол в кабинет</span></label>
   <p>Перемещай стол мышью или пальцем прямо по полу. Положение и угол сохраняются в браузере.</p>
   <div class="table-controls">
@@ -215,8 +225,20 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
   <div class="furniture-view"><span>Оригинал модели V4</span><a href="table-01-v4.html" target="_blank" rel="noopener">Открыть 3D</a></div>
   <p>Цена исходного товара не подтверждена: стол отображается в корзине без стоимости.</p>
  </div>
- <div class="furniture-preview"><strong>Остальные модели</strong>
-  <div class="furniture-view"><span>Preppy · iModern</span><a href="table-02.html" target="_blank" rel="noopener">Открыть 3D</a></div>
+ <div class="furniture-preview table-card" id="preppyCard" aria-label="Стол Preppy iModern — размещение в комнате">
+ <div class="table-mini">
+   <img src="preppy-original-main.webp" alt="Оригинальное фото стола Preppy iModern" loading="lazy">
+   <div><strong>Preppy · iModern V5</strong><span class="table-price-missing">Цена не подтверждена</span><small>IMR-1329172 · оригинальный GLB</small></div>
+ </div>
+ <label class="rug-check"><input id="preppyVisible" type="checkbox"><span>Поставить Preppy в кабинет</span></label>
+ <p>Модель остаётся в исходных пропорциях 1:1. Перемещай по полу мышью или пальцем, угол и место сохраняются.</p>
+ <div class="table-controls">
+   <button id="preppyTop" type="button" disabled>Вид сверху</button>
+   <button id="preppyRotate" type="button" disabled>Повернуть +15°</button>
+   <button id="preppyReset" type="button" disabled>Сбросить положение</button>
+ </div>
+ <div id="preppyMessage" role="status" aria-live="polite">Стол Preppy пока не установлен.</div>
+ <div class="furniture-view"><span>Фото и вращаемая 3D-модель</span><a href="table-02.html" target="_blank" rel="noopener">Открыть 3D</a></div>
  </div>
 </div>
 <div class="ins-head">Материалы комнаты</div>
@@ -232,7 +254,7 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 <div id="hoverProperties" class="ins-sub"></div></div></aside>
 <div id="hud">Колёсико · поворот мышью · W A S D · 4 вида камеры</div>
 <div id="budgetBar" role="region" aria-label="Стоимость выбранных предметов">
- <div class="budget-amount"><small>Итого выбранное · <span id="budgetCount">1 товар</span></small><strong id="budgetTotal">65 899 ₽</strong></div>
+ <div class="budget-amount"><small>Итого с известными ценами · <span id="budgetCount">1 товар</span></small><strong id="budgetTotal">65 899 ₽</strong></div>
  <button type="button" id="openCart" aria-haspopup="dialog" aria-controls="cartBackdrop">Корзина <span id="cartBadge">1</span></button>
 </div>
 <div id="cartBackdrop" hidden>
@@ -240,8 +262,8 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
  <section id="cartDialog" role="dialog" aria-modal="true" aria-label="Корзина выбранных предметов">
   <header><h2>Выбрано для кабинета</h2><button type="button" id="closeCart" aria-label="Закрыть корзину">✕</button></header>
   <div id="cartItems" aria-live="polite"></div>
-  <div class="cart-summary"><span>Итого</span><strong id="cartTotal">65 899 ₽</strong></div>
-  <p class="cart-disclaimer">Расчёт включает только выбранные товары с подтверждённой ценой. Мебель, ещё не подключённая к выбору в комнате, и отделка не учитываются. Цены могут изменяться.</p>
+  <div class="cart-summary"><span>Итого по известным ценам</span><strong id="cartTotal">65 899 ₽</strong></div>
+  <p class="cart-disclaimer">В сумму входят только выбранные товары с указанной ценой. Выбранные столы без подтверждённой стоимости указаны отдельно и не прибавляются к сумме. Отделка не учитывается. Цены магазинов могут изменяться.</p>
   <button type="button" id="clearCart">Убрать все выбранные предметы</button>
  </section>
 </div>
