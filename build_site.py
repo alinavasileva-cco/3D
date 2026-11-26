@@ -133,6 +133,10 @@ def build() -> None:
     if len(packed_table) != 16613948 or hashlib.sha256(packed_table).hexdigest() != "d9a7c28bfb67f52938cdd26f2931200813e36fa337ed07bc5f60279746a5d903":
         raise ValueError("The table V4 transfer parts differ from the original")
     table_html = gzip.decompress(packed_table)
+    # Inspect the non-binary prefix near the original embedded model. No geometry is altered.
+    probe_at = table_html.find(b"modelBytes")
+    print("TABLE-V4 EMBEDDING:", repr(table_html[max(0, probe_at-240):probe_at+500][:740]) if probe_at >= 0 else "not found")
+    print("TABLE-V4 MODELS:", [(token, table_html.find(token)) for token in [b"modelBytes", b"base64,", b"data:model", b"glTF", b"model-viewer"]])
     if len(table_html) != 23698943 or hashlib.sha256(table_html).hexdigest() != "3e9d8f2ad6e521498e05df7ec7ba3dff2a952645c784546f6ae84ff55e2258b5":
         raise ValueError("The restored table V4 HTML does not match the browser-tested file")
     if b'modelBytes' not in table_html or b'<model-viewer' not in table_html:
