@@ -114,7 +114,7 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 .table-controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
 .table-controls button{font:inherit;font-size:11px;padding:10px 7px;color:#f3f6f4;background:#ffffff18;border:1px solid #ffffff42;border-radius:8px;cursor:pointer}
 .table-controls button:disabled{opacity:.45;cursor:wait}
-#tableReset{grid-column:span 2}
+#tableReset{grid-column:auto}
 #tableMessage{font-size:11px;color:#c5e4d3;line-height:1.5;min-height:30px;overflow-wrap:anywhere}
 .cart-product .cart-placeholder{display:grid;place-items:center;width:69px;height:82px;border:1px solid #ffffff3c;background:#25382e;color:#d6f0db;border-radius:6px;font-weight:750;font-size:14px}
 /* Always visible budget and cart drawer */
@@ -215,10 +215,13 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
  <div class="furniture-preview table-card" id="tableCard" aria-label="Главный стол V4 — размещение в комнате">
   <div class="table-mini"><div class="table-mini-placeholder" aria-hidden="true">3D<br>V4</div><div><strong>Главный стол · модель V4</strong><span class="table-price-missing">Цена не подтверждена</span></div></div>
   <label class="rug-check"><input id="tableVisible" type="checkbox"><span>Поставить стол в кабинет</span></label>
-  <p>Перемещай стол мышью или пальцем прямо по полу. Положение и угол сохраняются в браузере.</p>
+  <p>Перемещай стол мышью или пальцем. ↶ / ↷ — поворот на 45° или 90°. Если угол не помещается, стол немного сдвинется к ближайшему свободному месту. Положение сохраняется в браузере.</p>
   <div class="table-controls">
+   <button id="tableRotateLeft45" type="button" disabled aria-label="Повернуть главный стол на 45 градусов против часовой стрелки">↶ 45°</button>
+   <button id="tableRotateRight45" type="button" disabled aria-label="Повернуть главный стол на 45 градусов по часовой стрелке">↷ 45°</button>
+   <button id="tableRotateLeft90" type="button" disabled aria-label="Повернуть главный стол на 90 градусов против часовой стрелки">↶ 90°</button>
+   <button id="tableRotateRight90" type="button" disabled aria-label="Повернуть главный стол на 90 градусов по часовой стрелке">↷ 90°</button>
    <button id="tableTop" type="button" disabled>Вид сверху</button>
-   <button id="tableRotate" type="button" disabled>Повернуть +15°</button>
    <button id="tableReset" type="button" disabled>Сбросить положение</button>
   </div>
   <div id="tableMessage" role="status" aria-live="polite">Стол пока не установлен.</div>
@@ -588,7 +591,7 @@ canvas.addEventListener('pointerup',releaseTableDrag,true);
 canvas.addEventListener('pointercancel',releaseTableDrag,true);
 function syncTableButtons(){
  const ready=Boolean(table&&tableEnabled);
- for(const id of ['tableTop','tableRotate','tableReset'])document.getElementById(id).disabled=!ready;
+ for(const id of ['tableTop','tableRotateLeft45','tableRotateRight45','tableRotateLeft90','tableRotateRight90','tableReset'])document.getElementById(id).disabled=!ready;
  document.getElementById('tableVisible').checked=tableEnabled;
 }
 async function loadTable(){
@@ -652,11 +655,40 @@ try{
 syncTableButtons();
 document.getElementById('tableVisible').addEventListener('change',e=>setTableEnabled(e.target.checked));
 document.getElementById('tableTop').addEventListener('click',()=>setView('top'));
-document.getElementById('tableRotate').addEventListener('click',()=>{
- if(!table)return;
- if(!placeTable(table.position.x,table.position.z,table.rotation.y+Math.PI/12))
-  tableMessage('Поворот ограничен стенами — сдвинь стол к центру.');
-});
+// Rotation is around the center of the existing, unmodified V4 model.
+// When the new footprint collides with a wall or Preppy, look for the nearest
+// free placement instead of silently cancelling the requested rotation.
+function rotateTableBy(degrees){
+ if(!table?.visible)return;
+ const angle=THREE.MathUtils.euclideanModulo(
+  table.rotation.y+THREE.MathUtils.degToRad(degrees),Math.PI*2
+ );
+ const startX=table.position.x,startZ=table.position.z;
+ if(placeTable(startX,startZ,angle))return;
+ let found=null;
+ // The search expands from the previous center, preserving the table's angle
+ // exactly. Movement is only used to clear a genuine physical obstruction.
+ for(let radius=.05;radius<=2.65&&found===null;radius+=.05){
+  const samples=Math.max(24,Math.ceil(2*Math.PI*radius/.055));
+  for(let i=0;i<samples;i++){
+   const phi=i*2*Math.PI/samples;
+   const x=startX+radius*Math.cos(phi);
+   const z=startZ+radius*Math.sin(phi);
+   if(tableFits(x,z,angle)){found={x,z};break}
+  }
+ }
+ if(found){
+  placeTable(found.x,found.z,angle);
+  tableMessage('Поворот '+(degrees>0?'+':'')+degrees+'° выполнен. Стол сдвинут на '+
+   Math.round(Math.hypot(found.x-startX,found.z-startZ)*100)+' см, чтобы не пересечь стены или другой стол.');
+ }else{
+  tableMessage('Не удалось повернуть на '+Math.abs(degrees)+'°: нет свободного места без пересечения стен или второго стола. Передвинь соседний стол или убери его галочкой.');
+ }
+}
+document.getElementById('tableRotateLeft45').addEventListener('click',()=>rotateTableBy(-45));
+document.getElementById('tableRotateRight45').addEventListener('click',()=>rotateTableBy(45));
+document.getElementById('tableRotateLeft90').addEventListener('click',()=>rotateTableBy(-90));
+document.getElementById('tableRotateRight90').addEventListener('click',()=>rotateTableBy(90));
 document.getElementById('tableReset').addEventListener('click',()=>{
  if(!table)return;
  if(!placeTable(tableDefault.x,tableDefault.z,tableDefault.a))
