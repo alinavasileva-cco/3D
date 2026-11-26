@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import base64
 import hashlib
-import re
 import json
 from pathlib import Path
 import shutil
@@ -143,13 +142,15 @@ def build() -> None:
     # The approved V4 viewer contains the original Blender glTF as base64.
     # Decode it without touching geometry, meshes, materials, or textures;
     # Three.js loads this same binary into the existing room scene.
-    embed = re.search(
-        rb'<script\\s+type="application/octet-stream"\\s+id="modelBytes"[^>]*>([A-Za-z0-9+/=\\s]+)</script>',
-        table_html, flags=re.IGNORECASE
-    )
-    if embed is None:
+    open_tag = b'<script type="application/octet-stream" id="modelBytes">'
+    start = table_html.find(open_tag)
+    if start < 0:
         raise ValueError("Cannot locate the original V4 table GLB payload")
-    encoded = re.sub(rb"\\s+", b"", embed.group(1))
+    start += len(open_tag)
+    stop = table_html.find(b"</script>", start)
+    if stop < 0:
+        raise ValueError("Original V4 embedded model is not terminated")
+    encoded = b"".join(table_html[start:stop].split())
     table_glb = base64.b64decode(encoded, validate=True)
     if len(table_glb) < 20 or table_glb[:4] != b"glTF":
         raise ValueError("V4 table model is not a GLB")
