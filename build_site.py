@@ -183,6 +183,19 @@ def build() -> None:
     (OUT / "oskar-v1.glb").write_bytes(oskar)
     (OUT / "oskar-original.jpg").write_bytes(original)
     (OUT / "oskar-v1-review.html").write_bytes(review)
+    # Approved Neptun V2: preserve the exact Blender export.
+    neptun = (ROOT / "neptun-v2.glb").read_bytes()
+    if len(neptun) != 1701544 or hashlib.sha256(neptun).hexdigest() != "7eff3cc1db6f36c2e45eb1ce96590a254fa265da681031cef7b24ce93f71c367":
+        raise ValueError("Neptun V2 GLB differs from reviewed file")
+    if neptun[:4] != b"glTF" or struct.unpack_from("<I", neptun, 8)[0] != len(neptun):
+        raise ValueError("Invalid Neptun GLB")
+    photo = (ROOT / "neptun-original.webp").read_bytes()
+    if photo[:4] != b"RIFF" or photo[8:12] != b"WEBP":
+        raise ValueError("Invalid Neptun reference photo")
+    (OUT / "neptun-v2.glb").write_bytes(neptun)
+    (OUT / "neptun-original.webp").write_bytes(photo)
+    (OUT / "table-v8").mkdir(exist_ok=True)
+    shutil.copyfile(ROOT / "table-v8" / "reference.jpg", OUT / "table-v8" / "reference.jpg")
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")

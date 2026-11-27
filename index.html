@@ -156,6 +156,32 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 .table-mini small{font-size:10px;color:#a5c3b0;display:block;margin-top:3px}
 #oskarMessage,#preppyMessage{font-size:11px;color:#c5e4d3;line-height:1.5;min-height:30px;overflow-wrap:anywhere}
 #preppyReset{grid-column:span 2}
+
+/* Compact product gallery: same independent checkboxes and controls */
+#inspector{width:min(520px,calc(100vw - 44px));max-width:520px}
+#furnitureCategory:not([hidden]){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:start}
+#furnitureCategory .table-card{min-width:0;padding:7px;margin:0;line-height:1.3;border-radius:10px;overflow-wrap:anywhere}
+#furnitureCategory .table-card:has(input:checked){border-color:#b7e2c5;background:#294038}
+#furnitureCategory .table-mini{display:flex;flex-direction:column;align-items:stretch;gap:6px}
+#furnitureCategory .table-mini>a{display:block}
+#furnitureCategory .table-mini img{display:block;width:100%;height:76px;object-fit:contain;background:white;border-radius:5px}
+#furnitureCategory .table-mini strong{font-size:11px;min-height:28px}
+#furnitureCategory .table-mini small{font-size:9px;line-height:1.25}
+#furnitureCategory .table-price-missing{font-size:12px;font-weight:700;color:#fff;line-height:1.2;margin-top:3px}
+#furnitureCategory .rug-check{margin:8px 0;gap:4px;font-size:10px;line-height:1.2;min-height:30px}
+#furnitureCategory .rug-check input{width:18px;height:18px;margin:0;flex-shrink:0}
+#furnitureCategory .rug-check span{font-size:0}
+#furnitureCategory .rug-check span::after{content:'Добавить';font-size:11px}
+#furnitureCategory .rug-check:has(input:checked) span::after{content:'В комнате';font-size:11px}
+.catalog-details summary{cursor:pointer;font-size:10px;color:#c5e4d3;padding:6px 0}
+#furnitureCategory .table-card:has(details[open]){grid-column:span 2}
+#furnitureCategory .furniture-view{flex-wrap:wrap;font-size:10px}
+#furnitureCategory .table-controls button{padding:8px 3px}
+#neptunMessage{font-size:10px;color:#c5e4d3;line-height:1.5}
+#rugCategory .rug-select{grid-template-columns:repeat(2,minmax(0,1fr))}
+#rugCategory .rug-select button img{height:86px}
+@media(max-width:1200px){#inspector{width:min(420px,calc(100vw - 44px))}#furnitureCategory:not([hidden]){grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:850px){#inspector{width:min(360px,calc(100vw - 20px));max-width:calc(100vw - 20px)}#furnitureCategory:not([hidden]){grid-template-columns:repeat(2,minmax(0,1fr))}#furnitureCategory .table-mini img{height:70px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"}}</script>
 </head>
@@ -189,7 +215,7 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 <div class="ins-head" style="margin-bottom:9px">Выбор предметов</div>
 <div class="catalog-tabs" role="tablist" aria-label="Категории предметов">
  <button type="button" role="tab" id="tabRugs" aria-controls="rugCategory" aria-selected="true" data-catalog-tab="rugs">Ковры</button>
- <button type="button" role="tab" id="tabFurniture" aria-controls="furnitureCategory" aria-selected="false" data-catalog-tab="furniture">Столы</button>
+ <button type="button" role="tab" id="tabFurniture" aria-controls="furnitureCategory" aria-selected="false" data-catalog-tab="furniture">Мебель</button>
 </div>
 <div id="rugCategory" role="tabpanel" aria-labelledby="tabRugs">
 <div id="rugCard" aria-label="Выбор и включение ковра">
@@ -213,8 +239,9 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 </div>
 <div id="furnitureCategory" role="tabpanel" aria-labelledby="tabFurniture" hidden>
  <div class="furniture-preview table-card" id="tableCard" aria-label="Главный стол V4 — размещение в комнате">
-  <div class="table-mini"><div class="table-mini-placeholder" aria-hidden="true">3D<br>V4</div><div><strong>Главный стол · модель V4</strong><span class="table-price-missing">Цена не подтверждена</span></div></div>
+  <div class="table-mini"><img src="table-v8/reference.jpg" alt="Оригинальное фото EUREKA" loading="lazy"><div><strong>Главный стол · модель V4</strong><span class="table-price-missing">Цена не подтверждена</span></div></div>
   <label class="rug-check"><input id="tableVisible" type="checkbox"><span>Поставить стол в кабинет</span></label>
+<details class="catalog-details"><summary>Настройки</summary>
   <p>Перемещай стол мышью или пальцем. ↶ / ↷ — поворот на 45° или 90°. Если угол не помещается, стол немного сдвинется к ближайшему свободному месту. Положение сохраняется в браузере.</p>
   <div class="table-controls">
    <button id="tableRotateLeft45" type="button" disabled aria-label="Повернуть главный стол на 45 градусов против часовой стрелки">↶ 45°</button>
@@ -227,13 +254,15 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
   <div id="tableMessage" role="status" aria-live="polite">Стол пока не установлен.</div>
   <div class="furniture-view"><span>Оригинал модели V4</span><a href="table-01-v4.html" target="_blank" rel="noopener">Открыть 3D</a></div>
   <p>Цена исходного товара не подтверждена: стол отображается в корзине без стоимости.</p>
- </div>
+ </details>
+</div>
  <div class="furniture-preview table-card" id="preppyCard" aria-label="Стол Preppy iModern — размещение в комнате">
  <div class="table-mini">
    <img src="preppy-original-main.webp" alt="Оригинальное фото стола Preppy iModern" loading="lazy">
    <div><strong>Preppy · iModern V5</strong><span class="table-price-missing">Цена не подтверждена</span><small>IMR-1329172 · оригинальный GLB</small></div>
  </div>
  <label class="rug-check"><input id="preppyVisible" type="checkbox"><span>Поставить Preppy в кабинет</span></label>
+<details class="catalog-details"><summary>Настройки</summary>
  <p>Модель остаётся в исходных пропорциях 1:1. Перемещай по полу мышью или пальцем, угол и место сохраняются.</p>
  <div class="table-controls">
    <button id="preppyTop" type="button" disabled>Вид сверху</button>
@@ -242,10 +271,12 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
  </div>
  <div id="preppyMessage" role="status" aria-live="polite">Стол Preppy пока не установлен.</div>
  <div class="furniture-view"><span>Фото и вращаемая 3D-модель</span><a href="table-02.html" target="_blank" rel="noopener">Открыть 3D</a></div>
- </div>
+ </details>
+</div>
   <div class="furniture-preview table-card" id="oskarCard" aria-label="Стол Oskar Loft Concept">
   <div class="table-mini"><a href="https://loft-concept.ru/catalog/product/rabochiy-stol-oskar-shpon-orekh/" target="_blank" rel="noopener noreferrer"><img src="oskar-original.jpg" alt="Оригинал Oskar" loading="lazy"></a><div><strong>Oskar · Loft Concept V1</strong><span class="table-price-missing">94 600 ₽</span><small>16.023-2 · 150 × 40 × 80 см</small></div></div>
   <label class="rug-check"><input id="oskarVisible" type="checkbox"><span>Поставить Oskar в кабинет</span></label>
+<details class="catalog-details"><summary>Настройки</summary>
   <p>Перемещай мышью или пальцем. Поворот на 45° и 90°. Положение сохраняется.</p>
   <div class="table-controls">
    <button id="oskarRotateLeft45" disabled>↶ 45°</button><button id="oskarRotateRight45" disabled>↷ 45°</button>
@@ -255,7 +286,23 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
   <div id="oskarMessage" role="status" aria-live="polite">Oskar пока не установлен.</div>
   <div class="furniture-view"><span>Оригинал и модель V1</span><a href="oskar-v1-review.html" target="_blank" rel="noopener">Открыть 3D</a></div>
   <div class="furniture-view"><span>Loft Concept</span><a href="https://loft-concept.ru/catalog/product/rabochiy-stol-oskar-shpon-orekh/" target="_blank" rel="noopener noreferrer">К товару</a></div>
+  </details>
+</div>
+  <div class="furniture-preview table-card" id="neptunCard" aria-label="Стол Нептун OGOGO">
+  <div class="table-mini"><a href="https://ogogo.ru/goods/sa_zsnepg/" target="_blank" rel="noopener noreferrer"><img src="neptun-original.webp" alt="Оригинал Нептун" loading="lazy"></a><div><strong>Нептун · OGOGO V2</strong><span class="table-price-missing">49 900 ₽</span><small>1001723 · 54 × 47 × 50 см</small></div></div>
+  <label class="rug-check"><input id="neptunVisible" type="checkbox"><span>Поставить Нептун в кабинет</span></label>
+<details class="catalog-details"><summary>Настройки</summary>
+  <p>Перемещай мышью или пальцем. Поворот на 45° и 90°. Положение сохраняется.</p>
+  <div class="table-controls">
+   <button id="neptunRotateLeft45" disabled>↶ 45°</button><button id="neptunRotateRight45" disabled>↷ 45°</button>
+   <button id="neptunRotateLeft90" disabled>↶ 90°</button><button id="neptunRotateRight90" disabled>↷ 90°</button>
+   <button id="neptunTop" disabled>Вид сверху</button><button id="neptunReset" disabled>Сбросить положение</button>
   </div>
+  <div id="neptunMessage" role="status" aria-live="polite">Нептун пока не установлен.</div>
+  
+  <div class="furniture-view"><span>OGOGO</span><a href="https://ogogo.ru/goods/sa_zsnepg/" target="_blank" rel="noopener noreferrer">К товару</a></div>
+  </details>
+</div>
 </div>
 <div class="ins-head">Материалы комнаты</div>
 <div class="mat-card"><div class="mat-title">Пол · BRONIX Kvarr Ёлка Amber</div>
@@ -552,6 +599,7 @@ function tableFits(x,z,a){
  }
  if(oskar?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:oskar.position.x,z:oskar.position.z,a:oskar.rotation.y,w:oskarHalfWidth,d:oskarHalfDepth}))return false;
  if(preppy?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:preppy.position.x,z:preppy.position.z,a:preppy.rotation.y,w:preppyHalfWidth,d:preppyHalfDepth}))return false;
+ if(neptun?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
  return true;
 }
 function placeTable(x,z,a,persist=true){
@@ -584,7 +632,7 @@ canvas.addEventListener('pointerdown',e=>{
  canvas.style.cursor='grabbing';try{canvas.setPointerCapture(e.pointerId)}catch(error){}
 },true);
 canvas.addEventListener('pointermove',e=>{
- if(preppyDragging||oskarDragging)return;
+ if(preppyDragging||oskarDragging||neptunDragging)return;
  if(tableDragging&&tableDragging.pointerId===e.pointerId){
   e.preventDefault();e.stopImmediatePropagation();tablePointer(e);
   const hit=tableRay.ray.intersectPlane(tablePlane,tablePoint);
@@ -732,6 +780,7 @@ function preppyFits(x,z,a){
  }
  if(oskar?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:oskar.position.x,z:oskar.position.z,a:oskar.rotation.y,w:oskarHalfWidth,d:oskarHalfDepth}))return false;
  if(table?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
+ if(neptun?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
  return true;
 }
 function placePreppy(x,z,a,store=true){
@@ -814,7 +863,7 @@ function endPreppyDrag(e){
  try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!preppy?.visible||e.button!==0||tableDragging)return;
+ if(!preppy?.visible||e.button!==0||tableDragging||neptunDragging)return;
  pointerPreppy(e);
  if(!preppyRay.intersectObject(preppy,true).length)return;
  e.preventDefault();e.stopImmediatePropagation();animation=null;controls.enabled=false;
@@ -883,6 +932,7 @@ function oskarFits(x,z,a){
  }
  if(preppy?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:preppy.position.x,z:preppy.position.z,a:preppy.rotation.y,w:preppyHalfWidth,d:preppyHalfDepth}))return false;
  if(table?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
+ if(neptun?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
  return true;
 }
 function placeOskar(x,z,a,store=true){
@@ -965,7 +1015,7 @@ function endOskarDrag(e){
  try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!oskar?.visible||e.button!==0||tableDragging||preppyDragging)return;
+ if(!oskar?.visible||e.button!==0||tableDragging||preppyDragging||neptunDragging)return;
  pointerOskar(e);
  if(!oskarRay.intersectObject(oskar,true).length)return;
  e.preventDefault();e.stopImmediatePropagation();animation=null;controls.enabled=false;
@@ -1037,6 +1087,183 @@ document.getElementById('oskarReset').addEventListener('click',()=>{
 });
 
 
+/* Нептун OGOGO V2: original validated GLB, independent on/off, rotation and movement.
+   Measured GLB bounds are used in metres; no replacement geometry or resizing. */
+const neptunStorage='cabinet1_neptun_v2_placement_v1';
+const neptunDefault={x:2.45,z:2.35,a:0};
+let neptun=null,neptunEnabled=false,neptunDragging=null,neptunLoading=null;
+let neptunHalfWidth=.27,neptunHalfDepth=.235,neptunFloorY=0;
+let neptunPlacement={...neptunDefault};
+const neptunRay=new THREE.Raycaster(),neptunMouse=new THREE.Vector2();
+const neptunPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+const neptunPoint=new THREE.Vector3();
+function neptunMessage(msg){document.getElementById('neptunMessage').textContent=msg}
+function saveNeptun(){
+ try{localStorage.setItem(neptunStorage,JSON.stringify({enabled:neptunEnabled,x:neptunPlacement.x,z:neptunPlacement.z,a:neptunPlacement.a}))}catch(e){}
+}
+function neptunFits(x,z,a){
+ const c=Math.cos(a),s=Math.sin(a);
+ for(const dx of [-neptunHalfWidth,neptunHalfWidth])for(const dz of [-neptunHalfDepth,neptunHalfDepth]){
+  const px=x+dx*c+dz*s,pz=z-dx*s+dz*c;
+  if(px<.10||px>3.25||pz<.12||pz>4.55||(pz>2.91&&px<.69))return false;
+ }
+ if(preppy?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:preppy.position.x,z:preppy.position.z,a:preppy.rotation.y,w:preppyHalfWidth,d:preppyHalfDepth}))return false;
+ if(oskar?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:oskar.position.x,z:oskar.position.z,a:oskar.rotation.y,w:oskarHalfWidth,d:oskarHalfDepth}))return false;
+ if(table?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
+ return true;
+}
+function placeNeptun(x,z,a,store=true){
+ if(!neptun||!neptunFits(x,z,a))return false;
+ neptun.position.set(x,neptunFloorY+.008,z);neptun.rotation.y=a;
+ neptunPlacement={x,z,a};
+ neptunMessage('Нептун · X: '+x.toFixed(2)+' м · Z: '+z.toFixed(2)+' м · угол: '+Math.round(THREE.MathUtils.radToDeg(a))+'°');
+ if(store)saveNeptun();
+ return true;
+}
+function syncNeptunControls(){
+ const active=Boolean(neptun&&neptunEnabled&&neptun.visible);
+ for(const id of ['neptunTop','neptunRotateLeft45','neptunRotateRight45','neptunRotateLeft90','neptunRotateRight90','neptunReset'])document.getElementById(id).disabled=!active;
+ document.getElementById('neptunVisible').checked=neptunEnabled;
+}
+async function loadNeptun(){
+ if(neptun){neptun.visible=neptunEnabled;syncNeptunControls();return;}
+ if(neptunLoading)return neptunLoading;
+ neptunMessage('Загрузка модели Нептун V2…');
+ neptunLoading=(async()=>{
+  try{
+   const response=await fetch('neptun-v2.glb');
+   if(!response.ok)throw new Error('HTTP '+response.status);
+   const glb=await response.arrayBuffer();
+   if(new TextDecoder().decode(new Uint8Array(glb,0,4))!=='glTF')throw new Error('неверный GLB');
+   const gltf=await loader.parseAsync(glb,'');
+   const bounds=new THREE.Box3().setFromObject(gltf.scene);
+   const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+   if(bounds.isEmpty()||![size.x,size.y,size.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('неверные габариты модели');
+   if(Math.abs(size.x-.54)>.005||Math.abs(size.z-.47)>.005||Math.abs(size.y-.50)>.005)throw new Error('размеры GLB не помещаются в кабинет при масштабе 1:1');
+   const group=new THREE.Group();group.name='Нептун OGOGO V2 | перемещаемый стол';
+   gltf.scene.position.set(-center.x,-bounds.min.y,-center.z);
+   group.add(gltf.scene);
+   neptunHalfWidth=size.x/2;neptunHalfDepth=size.z/2;
+   group.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+   const floorRay=new THREE.Raycaster(new THREE.Vector3(neptunDefault.x,6,neptunDefault.z),new THREE.Vector3(0,-1,0),0,12);
+   const intersections=floorRay.intersectObjects(floors,true);
+   neptunFloorY=intersections.length?intersections[0].point.y:0;
+   neptun=group;scene.add(neptun);
+   const presets=[neptunPlacement,neptunDefault,{x:1.75,z:1.15,a:0},{x:1.68,z:3.85,a:Math.PI/2},{x:2.28,z:3.55,a:0},{x:1.75,z:1.0,a:Math.PI/2}];
+   let placed=false;
+   for(const p of presets){if(placeNeptun(p.x,p.z,p.a,false)){placed=true;break}}
+   if(!placed)throw new Error('для Нептун нет свободного места при указанных габаритах');
+   neptun.visible=neptunEnabled;
+   syncNeptunControls();saveNeptun();
+   if(!neptunEnabled)neptunMessage('Нептун выключен. Положение сохранено.');
+  }catch(error){
+   console.error(error);
+   if(neptun){scene.remove(neptun);neptun=null;}
+   neptunMessage('Не удалось установить Нептун: '+String(error.message||error));
+   neptunEnabled=false;syncNeptunControls();saveNeptun();renderCart();
+  }
+ })().finally(()=>{neptunLoading=null});
+ return neptunLoading;
+}
+function setNeptunEnabled(yes){
+ neptunEnabled=Boolean(yes);
+ if(!neptunEnabled&&neptunDragging){neptunDragging=null;controls.enabled=true;canvas.style.cursor='';}
+ if(neptun)neptun.visible=neptunEnabled;
+ if(neptunEnabled){
+  if(neptun){
+   if(!placeNeptun(neptunPlacement.x,neptunPlacement.z,neptunPlacement.a,false)){
+    neptunMessage('Положение пересекает второй стол. Перемести второй стол и включи Нептун.');
+    neptunEnabled=false;neptun.visible=false;
+   }
+  }else if(room)void loadNeptun();
+  else neptunMessage('Модель появится после загрузки комнаты.');
+ }else neptunMessage('Стол Нептун убран из комнаты. Положение сохранено.');
+ syncNeptunControls();saveNeptun();renderCart();
+}
+function pointerNeptun(e){
+ const rect=canvas.getBoundingClientRect();
+ neptunMouse.set((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2);
+ neptunRay.setFromCamera(neptunMouse,camera);
+}
+function endNeptunDrag(e){
+ if(!neptunDragging||neptunDragging.pointerId!==e.pointerId)return;
+ e.stopImmediatePropagation();neptunDragging=null;controls.enabled=true;
+ canvas.style.cursor='';saveNeptun();
+ try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(!neptun?.visible||e.button!==0||tableDragging||preppyDragging||oskarDragging)return;
+ pointerNeptun(e);
+ if(!neptunRay.intersectObject(neptun,true).length)return;
+ e.preventDefault();e.stopImmediatePropagation();animation=null;controls.enabled=false;
+ neptunPlane.constant=-(neptunFloorY+.008);
+ const hit=neptunRay.ray.intersectPlane(neptunPlane,neptunPoint);
+ neptunDragging={pointerId:e.pointerId,dx:hit?neptun.position.x-hit.x:0,dz:hit?neptun.position.z-hit.z:0};
+ canvas.style.cursor='grabbing';
+ try{canvas.setPointerCapture(e.pointerId)}catch(error){}
+},true);
+canvas.addEventListener('pointermove',e=>{
+ if(neptunDragging&&neptunDragging.pointerId===e.pointerId){
+  e.preventDefault();e.stopImmediatePropagation();pointerNeptun(e);
+  const hit=neptunRay.ray.intersectPlane(neptunPlane,neptunPoint);
+  if(!hit)return;
+  const x=hit.x+neptunDragging.dx,z=hit.z+neptunDragging.dz,a=neptun.rotation.y;
+  if(!placeNeptun(x,z,a,false))
+   if(!placeNeptun(x,neptun.position.z,a,false))placeNeptun(neptun.position.x,z,a,false);
+  return;
+ }
+ if(neptun?.visible){pointerNeptun(e);if(neptunRay.intersectObject(neptun,true).length)canvas.style.cursor='grab'}
+},true);
+canvas.addEventListener('pointerup',endNeptunDrag,true);
+canvas.addEventListener('pointercancel',endNeptunDrag,true);
+try{
+ const saved=JSON.parse(localStorage.getItem(neptunStorage));
+ if(saved&&typeof saved==='object'){
+  neptunEnabled=saved.enabled===true;
+  if([saved.x,saved.z,saved.a].every(Number.isFinite))neptunPlacement={x:saved.x,z:saved.z,a:saved.a};
+ }
+}catch(e){}
+syncNeptunControls();
+document.getElementById('neptunVisible').addEventListener('change',e=>setNeptunEnabled(e.target.checked));
+document.getElementById('neptunTop').addEventListener('click',()=>setView('top'));
+function rotateNeptunBy(degrees){
+ if(!neptun?.visible)return;
+ const angle=THREE.MathUtils.euclideanModulo(
+  neptun.rotation.y+THREE.MathUtils.degToRad(degrees),Math.PI*2
+ );
+ const startX=neptun.position.x,startZ=neptun.position.z;
+ if(placeNeptun(startX,startZ,angle))return;
+ let found=null;
+ // The search expands from the previous center, preserving the neptun's angle
+ // exactly. Movement is only used to clear a genuine physical obstruction.
+ for(let radius=.05;radius<=2.65&&found===null;radius+=.05){
+  const samples=Math.max(24,Math.ceil(2*Math.PI*radius/.055));
+  for(let i=0;i<samples;i++){
+   const phi=i*2*Math.PI/samples;
+   const x=startX+radius*Math.cos(phi);
+   const z=startZ+radius*Math.sin(phi);
+   if(neptunFits(x,z,angle)){found={x,z};break}
+  }
+ }
+ if(found){
+  placeNeptun(found.x,found.z,angle);
+  neptunMessage('Поворот '+(degrees>0?'+':'')+degrees+'° выполнен. Стол сдвинут на '+
+   Math.round(Math.hypot(found.x-startX,found.z-startZ)*100)+' см, чтобы не пересечь стены или другой стол.');
+ }else{
+  neptunMessage('Не удалось повернуть на '+Math.abs(degrees)+'°: нет свободного места без пересечения стен или второго стола. Передвинь соседний стол или убери его галочкой.');
+ }
+}
+document.getElementById('neptunRotateLeft45').addEventListener('click',()=>rotateNeptunBy(-45));
+document.getElementById('neptunRotateRight45').addEventListener('click',()=>rotateNeptunBy(45));
+document.getElementById('neptunRotateLeft90').addEventListener('click',()=>rotateNeptunBy(-90));
+document.getElementById('neptunRotateRight90').addEventListener('click',()=>rotateNeptunBy(90));
+document.getElementById('neptunReset').addEventListener('click',()=>{
+ if(!neptun)return;
+ if(!placeNeptun(neptunDefault.x,neptunDefault.z,neptunDefault.a))
+  neptunMessage('Начальная позиция занята. Перемести другой стол или Нептун.');
+});
+
+
 /* Sanderson Matmi Avocado · independent movable BlenderKit GLB */
 let rugFiles=['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'];
 let rugInit={x:1.75,z:2.30,a:0},rugStorage='cabinet1_matmi148107_v1';
@@ -1064,7 +1291,7 @@ function rugPointer(e){
  rugRay.setFromCamera(rugMouse,camera);
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!rug||e.button!==0)return;
+ if(!rug||!rug.visible||e.button!==0||neptunDragging)return;
  rugPointer(e);if(!rugRay.intersectObject(rug,true).length)return;
  e.preventDefault();e.stopImmediatePropagation();controls.enabled=false;animation=null;
  rugPlane.constant=-(rugFloorY+.0012);
@@ -1162,9 +1389,10 @@ function setRugEnabled(yes){
 }
 function cartItemsSelected(){
  const chosen=rugEnabled?[{id:'rug-'+rugKind,qty:1,category:'Ковёр',...rugVariants[rugKind]}]:[];
- if(tableEnabled)chosen.push({id:'table-01-v4',qty:1,category:'Стол',title:'Главный стол · V4',sku:'Оригинальная 3D-модель V4',amount:null,photo:null,url:'table-01-v4.html'});
+ if(tableEnabled)chosen.push({id:'table-01-v4',qty:1,category:'Стол',title:'Главный стол · V4',sku:'Оригинальная 3D-модель V4',amount:null,photo:'table-v8/reference.jpg',url:'table-01-v4.html'});
  if(preppyEnabled)chosen.push({id:'table-02-v5',qty:1,category:'Стол',title:'Preppy · iModern V5',sku:'IMR-1329172 · 3D-модель V5',amount:null,photo:'preppy-original-main.webp',url:'https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta'});
  if(oskarEnabled)chosen.push({id:'oskar-v1',qty:1,category:'Стол',title:'Oskar · Loft Concept V1',sku:'16.023-2 · шпон ореха',amount:94600,photo:'oskar-original.jpg',url:'https://loft-concept.ru/catalog/product/rabochiy-stol-oskar-shpon-orekh/'});
+ if(neptunEnabled)chosen.push({id:'neptun-v2',qty:1,category:'Стол',title:'Нептун · OGOGO V2',sku:'1001723 · 54 × 47 × 50 см',amount:49900,photo:'neptun-original.webp',url:'https://ogogo.ru/goods/sa_zsnepg/'});
   return chosen;
 }
 function renderCart(){
@@ -1189,7 +1417,7 @@ function renderCart(){
   const sku=document.createElement('small');sku.textContent=item.sku+' · 1 шт.';body.appendChild(sku);
   const price=document.createElement('span');price.className='cart-price';price.textContent=Number.isFinite(item.amount)?formatPrice(item.amount):'Цена не подтверждена';body.appendChild(price);
   const link=document.createElement('a');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Карточка товара';body.appendChild(link);
-  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>item.id==='table-01-v4'?setTableEnabled(false):item.id==='table-02-v5'?setPreppyEnabled(false):item.id==='oskar-v1'?setOskarEnabled(false):setRugEnabled(false));body.appendChild(remove);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>item.id==='table-01-v4'?setTableEnabled(false):item.id==='table-02-v5'?setPreppyEnabled(false):item.id==='oskar-v1'?setOskarEnabled(false):item.id==='neptun-v2'?setNeptunEnabled(false):setRugEnabled(false));body.appendChild(remove);
   list.appendChild(row);
  }
  document.getElementById('clearCart').disabled=count===0;
@@ -1204,7 +1432,7 @@ document.getElementById('openCart').addEventListener('click',openCart);
 document.getElementById('closeCart').addEventListener('click',closeCart);
 document.getElementById('cartDim').addEventListener('click',closeCart);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('cartBackdrop').hidden)closeCart()});
-document.getElementById('clearCart').addEventListener('click',()=>{setRugEnabled(false);setTableEnabled(false);setPreppyEnabled(false);setOskarEnabled(false)});
+document.getElementById('clearCart').addEventListener('click',()=>{setRugEnabled(false);setTableEnabled(false);setPreppyEnabled(false);setOskarEnabled(false);setNeptunEnabled(false)});
 document.getElementById('rugVisible').addEventListener('change',e=>setRugEnabled(e.target.checked));
 document.querySelectorAll('[data-rug-variant]').forEach(b=>b.addEventListener('click',()=>selectRug(b.dataset.rugVariant)));
 for(const tab of document.querySelectorAll('[data-catalog-tab]')){
@@ -1289,6 +1517,7 @@ loadRoom().then(gltf=>{
  if(tableEnabled)void loadTable();
  if(preppyEnabled)void loadPreppy();
  if(oskarEnabled)void loadOskar();
+ if(neptunEnabled)void loadNeptun();
  const qs=new URLSearchParams(location.search);
  setLightMode(qs.get('night')==='1'?'night':'day');
  const transparency=Math.max(0,Math.min(100,Number(qs.get('walls'))||0));
