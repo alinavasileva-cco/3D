@@ -235,10 +235,46 @@ def build() -> None:
         raise ValueError("SMEG FAB5LOR6 glTF header invalid")
     dest=OUT/"assets"/"smeg-v14"
     dest.mkdir(parents=True,exist_ok=True)
-    (dest/"smeg-fab5lor6-v14.glb").write_bytes(smeg_glb)
+    # V15: the previous V14 PBR color factors had mistakenly contained
+    # display sRGB values. glTF 2.0 baseColorFactor is linear RGB; leaving
+    # large green values in linear space produced a yellow fridge under Three.js lighting.
+    # These are visually matched test swatches, not factory RAL or HEX codes.
+    def smeg_srgb8_to_linear(v):
+        c=v/255.0
+        return c/12.92 if c<=0.04045 else ((c+0.055)/1.055)**2.4
+
+    gltf_json_len=struct.unpack_from("<I",smeg_glb,12)[0]
+    if smeg_glb[16:20]!=b"JSON":
+        raise ValueError("SMEG source GLB missing JSON chunk")
+    smeg_gltf=json.loads(smeg_glb[20:20+gltf_json_len])
+    smeg_colors={
+        "FAB5 — orange enamel glossy":(210,97,18),  # sRGB #D26112, orange thermoformed front
+        "FAB5 — orange coated steel":(200,88,18),   # sRGB #C85812, painted steel sides
+    }
+    changed=0
+    for material in smeg_gltf.get("materials",[]):
+        name=material.get("name")
+        if name in smeg_colors:
+            rgb=smeg_colors[name]
+            pbr=material.setdefault("pbrMetallicRoughness",{})
+            pbr["baseColorFactor"]=[*(smeg_srgb8_to_linear(c) for c in rgb),1.0]
+            pbr["metallicFactor"]=0.0
+            # Preserve clearcoat and roughness, chrome and all remaining materials.
+            changed+=1
+    if changed!=2:
+        raise ValueError(f"SMEG V15 expected two original orange materials, found {changed}")
+    updated_json=json.dumps(smeg_gltf,ensure_ascii=False,separators=(",",":")).encode("utf-8")
+    updated_json+=b" "*((-len(updated_json))%4)
+    untouched_bin=smeg_glb[20+gltf_json_len:]
+    color_glb=(b"glTF"+struct.pack("<II",2,20+len(updated_json)+len(untouched_bin))
+               +struct.pack("<I",len(updated_json))+b"JSON"+updated_json+untouched_bin)
+    if struct.unpack_from("<I",color_glb,8)[0]!=len(color_glb):
+        raise ValueError("SMEG V15 GLB length invalid")
+    (dest/"smeg-fab5lor6-v15.glb").write_bytes(color_glb)
+    print(f"SMEG V15 color corrected: {len(color_glb):,} bytes; SHA256 {hashlib.sha256(color_glb).hexdigest()}")
     if SMEG_PHOTO.read_bytes()[:3]!=bytes.fromhex("ffd8ff"):
         raise ValueError("SMEG reference photo invalid")
-    print(f"SMEG FAB5LOR6 preview verified: {len(smeg_glb):,} bytes")
+    print(f"SMEG FAB5LOR6 original V14 source verified: {len(smeg_glb):,} bytes")
 
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")

@@ -330,7 +330,7 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
     <div id="smegMessage" role="status" aria-live="polite">Минибар выключен. Включи галочку, чтобы поставить его в комнату.</div>
     <div class="furniture-view"><span>Фото и 3D-модель</span><a href="smeg-fab5lor6.html" target="_blank" rel="noopener">Открыть 3D</a></div>
     <div class="furniture-view"><span>SMG Kitchen · FAB5LOR6</span><a href="https://smg-kitchen.ru/minibar-smeg-oranzhevyy-fab5lor6/" target="_blank" rel="noopener noreferrer">К товару</a></div>
-    <p>3D V14 — цветовая проба, ещё не утверждена. Заводской RAL/HEX и цена не подтверждены. В стоимость кабинета не включается.</p>
+    <p>3D V15 — оранжевый цвет, проба, ещё не утверждена. Заводской RAL/HEX и цена не подтверждены. В стоимость кабинета не включается.</p>
   </details>
 </div>
 
@@ -589,7 +589,7 @@ camera.position.add(v);controls.target.add(v);animation=null;
 setView('entrance',true);
 const loader=new GLTFLoader();
 
-/* SMEG FAB5LOR6 V14 | independent catalog item, no changes to the approved room GLB. */
+/* SMEG FAB5LOR6 V15 | independent catalog item, no changes to the approved room GLB. */
 const smegStorage='cabinet1_smeg_fab5lor6_v14_placement_v1';
 const smegDefault={x:2.84,z:3.88,a:0};
 let smeg=null,smegEnabled=false,smegLoading=null,smegDragging=null;
@@ -642,7 +642,7 @@ async function loadSmeg(){
  smegMessage('Загрузка 3D-модели SMEG FAB5LOR6…');
  smegLoading=(async()=>{
   try{
-   const res=await fetch('assets/smeg-v14/smeg-fab5lor6-v14.glb');
+   const res=await fetch('assets/smeg-v14/smeg-fab5lor6-v15.glb');
    if(!res.ok)throw new Error('HTTP '+res.status);
    const bytes=await res.arrayBuffer();
    if(new TextDecoder().decode(new Uint8Array(bytes,0,4))!=='glTF')throw new Error('Недопустимый GLB');
@@ -1780,7 +1780,7 @@ function cartItemsSelected(){
  if(oskarEnabled)chosen.push({id:'oskar-v1',qty:1,category:'Стол',title:'Oskar · Loft Concept V1',sku:'16.023-2 · шпон ореха',amount:94600,photo:'oskar-original.jpg',url:'https://loft-concept.ru/catalog/product/rabochiy-stol-oskar-shpon-orekh/'});
  if(neptunEnabled)chosen.push({id:'neptun-v2',qty:1,category:'Стол',title:'Нептун · OGOGO V2',sku:'1001723 · 54 × 47 × 50 см',amount:49900,photo:'neptun-original.webp',url:'https://ogogo.ru/goods/sa_zsnepg/'});
   if(fillisEnabled)chosen.push({id:'fillis-v4',qty:1,category:'Стол',title:'Fillis Olive · Divan.ru V4',sku:'301131 · 80 × 45 × 45 см',amount:null,photo:"https://cdn0.divan.ru/img/v1/rCMYPCJdj1_JOLB1NwjU7LvGftbiqv-EMzvuQS_2t_Y/t%3A0%3A%3A0%3A0/pd%3A123%3A160%3A123%3A160/rs%3Afit%3A948%3A594%3A0%3A1%3Ace%3A0%3A0/g%3Ace%3A0%3A0/bg%3Af5f3f1/q%3A85/czM6Ly9kaXZhbi9wcm9kdWN0LzU4OTc4ODMucG5n.jpg",url:"https://www.divan.ru/product/jurnalnyj-stol-fillis-olive"});
- if(smegEnabled)chosen.push({id:'smeg-fab5lor6-v14',qty:1,category:'Минибар',title:'SMEG FAB5LOR6 · оранжевый минибар',sku:'FAB5LOR6 · 40,4 × 50 × 72,5 см · тест V14',amount:null,photo:'assets/smeg-v14/original.jpg',url:'https://smg-kitchen.ru/minibar-smeg-oranzhevyy-fab5lor6/'});
+ if(smegEnabled)chosen.push({id:'smeg-fab5lor6-v15',qty:1,category:'Минибар',title:'SMEG FAB5LOR6 · оранжевый минибар',sku:'FAB5LOR6 · 40,4 × 50 × 72,5 см · тест V15',amount:null,photo:'assets/smeg-v14/original.jpg',url:'https://smg-kitchen.ru/minibar-smeg-oranzhevyy-fab5lor6/'});
  return chosen;
 }
 function renderCart(){
@@ -1805,7 +1805,7 @@ function renderCart(){
   const sku=document.createElement('small');sku.textContent=item.sku+' · 1 шт.';body.appendChild(sku);
   const price=document.createElement('span');price.className='cart-price';price.textContent=Number.isFinite(item.amount)?formatPrice(item.amount):'Цена не подтверждена';body.appendChild(price);
   const link=document.createElement('a');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Карточка товара';body.appendChild(link);
-  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>item.id==='table-01-v4'?setTableEnabled(false):item.id==='table-02-v5'?setPreppyEnabled(false):item.id==='oskar-v1'?setOskarEnabled(false):item.id==='neptun-v2'?setNeptunEnabled(false):item.id==='fillis-v4'?setFillisEnabled(false):item.id==='smeg-fab5lor6-v14'?setSmegEnabled(false):setRugEnabled(false));body.appendChild(remove);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>item.id==='table-01-v4'?setTableEnabled(false):item.id==='table-02-v5'?setPreppyEnabled(false):item.id==='oskar-v1'?setOskarEnabled(false):item.id==='neptun-v2'?setNeptunEnabled(false):item.id==='fillis-v4'?setFillisEnabled(false):item.id==='smeg-fab5lor6-v15'?setSmegEnabled(false):setRugEnabled(false));body.appendChild(remove);
   list.appendChild(row);
  }
  document.getElementById('clearCart').disabled=count===0;
