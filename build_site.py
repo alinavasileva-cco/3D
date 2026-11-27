@@ -165,6 +165,24 @@ def build() -> None:
         raise ValueError("Unexpected V4 table glTF version")
     (OUT / "table-01-v4.glb").write_bytes(table_glb)
     print(f"Verified embedded V4 table GLB: {len(table_glb):,} bytes; SHA-256 {hashlib.sha256(table_glb).hexdigest()}; meshes {len(table_gltf.get('meshes', []))}")
+    # Oskar V1: reuse the exact browser-review GLB and original photograph.
+    import re
+    review = (ROOT / "oskar-v1-review.html").read_bytes()
+    payload = re.search(rb"data:model/gltf-binary;base64,([A-Za-z0-9+/=]+)", review)
+    photo = re.search(rb"data:image/jpeg;base64,([A-Za-z0-9+/=]+)", review)
+    if not payload or not photo:
+        raise ValueError("Oskar review payload missing")
+    oskar = base64.b64decode(payload.group(1), validate=True)
+    if len(oskar) != 653816 or hashlib.sha256(oskar).hexdigest() != "bdaa11a4faf8d9288b997ed427c62153276677520590ae69da5674004c0ea2cb":
+        raise ValueError("Oskar GLB mismatch")
+    if oskar[:4] != b"glTF" or struct.unpack_from("<I", oskar, 8)[0] != len(oskar):
+        raise ValueError("Invalid Oskar GLB")
+    original = base64.b64decode(photo.group(1), validate=True)
+    if not original.startswith(bytes.fromhex("ffd8ff")):
+        raise ValueError("Invalid Oskar reference photo")
+    (OUT / "oskar-v1.glb").write_bytes(oskar)
+    (OUT / "oskar-original.jpg").write_bytes(original)
+    (OUT / "oskar-v1-review.html").write_bytes(review)
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")
