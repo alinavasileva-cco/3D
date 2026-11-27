@@ -28,6 +28,14 @@ EXTRA_FILES = [ROOT / "table-02.html", ROOT / "table-02.glb", *RUG_PARTS, RUG_PH
 TKANO_FILES = [ROOT / "assets" / "tkano-tea.glb", ROOT / "assets" / "tkano-original.webp"]
 TKANO_SIZE = 1_536_044
 TKANO_SHA256 = "5b823b003ab06e147528754963966d6ba76f5b072479665aec7e7bae72489ad4"
+
+# SMEG FAB5LOR6 — V14 color-trial GLB, compressed as verified base64 source parts.
+SMEG_PARTS=[ROOT/"assets"/"smeg-v14"/f"part{i:02d}.b64" for i in range(1,11)]
+SMEG_PHOTO=ROOT/"assets"/"smeg-v14"/"original.jpg"
+SMEG_VIEWER=ROOT/"smeg-fab5lor6.html"
+SMEG_GLB_SIZE=1209948
+SMEG_GLB_SHA256="0f0b1a59dfbc1a58b54ece6a8a8700976db93bf59bb1e4e1be9362d969020fe5"
+
 EXPECTED_SIZE = 10_104_552
 EXPECTED_SHA256 = "1ba8304d90217b3c97f021cda9a4d7b2ce4e69716408549033ffde3685185648"
 
@@ -52,7 +60,7 @@ def validate_glb(data: bytes) -> tuple[int, int]:
 
 
 def build() -> None:
-    for path in [*FILES, *EXTRA_FILES, *PARTS, *TKANO_FILES]:
+    for path in [*FILES, *EXTRA_FILES, *PARTS, *TKANO_FILES, *SMEG_PARTS, SMEG_PHOTO, SMEG_VIEWER]:
         if not path.is_file():
             raise FileNotFoundError(f"Missing source: {path.name}")
         if path.stat().st_size == 0:
@@ -80,7 +88,7 @@ def build() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
-    for path in [*FILES, *EXTRA_FILES, *PARTS, *TKANO_FILES]:
+    for path in [*FILES, *EXTRA_FILES, *PARTS, *TKANO_FILES, *SMEG_PARTS, SMEG_PHOTO, SMEG_VIEWER]:
         dest = OUT / path.relative_to(ROOT)
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(path, dest)
@@ -217,6 +225,21 @@ def build() -> None:
         raise ValueError("Published Fillis V4 parts failed checksum")
     print(f"Verified and published Fillis V4: {len(fillis):,} bytes; 15 parts; SHA-256 {fillis_sha256}")
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
+    # Keep the original room geometry and all existing approved furniture untouched.
+    smeg_text="".join(p.read_text(encoding="ascii") for p in SMEG_PARTS)
+    smeg_gzip=base64.b64decode(smeg_text,validate=True)
+    smeg_glb=gzip.decompress(smeg_gzip)
+    if len(smeg_glb)!=SMEG_GLB_SIZE or hashlib.sha256(smeg_glb).hexdigest()!=SMEG_GLB_SHA256:
+        raise ValueError("SMEG FAB5LOR6 V14 GLB differs from the staged color-preview version")
+    if smeg_glb[:4]!=b"glTF" or struct.unpack_from("<I",smeg_glb,8)[0]!=len(smeg_glb):
+        raise ValueError("SMEG FAB5LOR6 glTF header invalid")
+    dest=OUT/"assets"/"smeg-v14"
+    dest.mkdir(parents=True,exist_ok=True)
+    (dest/"smeg-fab5lor6-v14.glb").write_bytes(smeg_glb)
+    if SMEG_PHOTO.read_bytes()[:3]!=bytes.fromhex("ffd8ff"):
+        raise ValueError("SMEG reference photo invalid")
+    print(f"SMEG FAB5LOR6 preview verified: {len(smeg_glb):,} bytes")
+
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")
     print(f"Verified Sanderson rug GLB: {len(rug):,} bytes")

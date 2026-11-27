@@ -309,6 +309,31 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
 <details class="catalog-details"><summary>Настройки</summary><p>Перемещай мышью или пальцем. Поворот на 45° и 90°. Положение сохраняется. Матовое покрытие BlenderKit, согласованная модель V4.</p>
 <div class="table-controls"><button id="fillisRotateLeft45" disabled>↶ 45°</button><button id="fillisRotateRight45" disabled>↷ 45°</button><button id="fillisRotateLeft90" disabled>↶ 90°</button><button id="fillisRotateRight90" disabled>↷ 90°</button><button id="fillisTop" disabled>Вид сверху</button><button id="fillisReset" disabled>Сбросить положение</button></div>
 <div id="fillisMessage" role="status" aria-live="polite">Fillis пока не установлен.</div><div class="furniture-view"><span>Divan.ru</span><a href="https://www.divan.ru/product/jurnalnyj-stol-fillis-olive" target="_blank" rel="noopener noreferrer">К товару</a></div><p>Актуальная цена и наличие не подтверждены; в общую сумму не включается.</p></details></div>
+
+<div class="furniture-preview table-card" id="smegCard" aria-label="Минибар SMEG FAB5LOR6, оранжевый">
+  <div class="table-mini">
+    <a href="https://smg-kitchen.ru/minibar-smeg-oranzhevyy-fab5lor6/" target="_blank" rel="noopener noreferrer"><img src="assets/smeg-v14/original.jpg" alt="Оригинальное фото оранжевого минибара SMEG FAB5LOR6" loading="lazy"></a>
+    <div><strong>SMEG FAB5LOR6 · минибар</strong><span class="table-price-missing">Цена не подтверждена</span><small>Оранжевый · 40,4 × 50 × 72,5 см</small></div>
+  </div>
+  <label class="rug-check"><input id="smegVisible" type="checkbox"><span>Поставить SMEG в кабинет</span></label>
+  <details class="catalog-details">
+    <summary>Настройки минибара</summary>
+    <p>Передвигай минибар мышью или пальцем, поворачивай на 45° и 90°. Галочка убирает модель из комнаты. Положение сохраняется.</p>
+    <div class="table-controls">
+      <button id="smegRotateLeft45" type="button" disabled>↶ 45°</button>
+      <button id="smegRotateRight45" type="button" disabled>↷ 45°</button>
+      <button id="smegRotateLeft90" type="button" disabled>↶ 90°</button>
+      <button id="smegRotateRight90" type="button" disabled>↷ 90°</button>
+      <button id="smegTop" type="button" disabled>Вид сверху</button>
+      <button id="smegReset" type="button" disabled>Сбросить положение</button>
+    </div>
+    <div id="smegMessage" role="status" aria-live="polite">Минибар выключен. Включи галочку, чтобы поставить его в комнату.</div>
+    <div class="furniture-view"><span>Фото и 3D-модель</span><a href="smeg-fab5lor6.html" target="_blank" rel="noopener">Открыть 3D</a></div>
+    <div class="furniture-view"><span>SMG Kitchen · FAB5LOR6</span><a href="https://smg-kitchen.ru/minibar-smeg-oranzhevyy-fab5lor6/" target="_blank" rel="noopener noreferrer">К товару</a></div>
+    <p>3D V14 — цветовая проба, ещё не утверждена. Заводской RAL/HEX и цена не подтверждены. В стоимость кабинета не включается.</p>
+  </details>
+</div>
+
 </div>
 <div class="ins-head">Материалы комнаты</div>
 <div class="mat-card"><div class="mat-title">Пол · BRONIX Kvarr Ёлка Amber</div>
@@ -564,6 +589,172 @@ camera.position.add(v);controls.target.add(v);animation=null;
 setView('entrance',true);
 const loader=new GLTFLoader();
 
+/* SMEG FAB5LOR6 V14 | independent catalog item, no changes to the approved room GLB. */
+const smegStorage='cabinet1_smeg_fab5lor6_v14_placement_v1';
+const smegDefault={x:2.84,z:3.88,a:0};
+let smeg=null,smegEnabled=false,smegLoading=null,smegDragging=null;
+let smegHalfWidth=.202,smegHalfDepth=.286,smegFloorY=0;
+let smegPlacement={...smegDefault};
+const smegRay=new THREE.Raycaster(),smegMouse=new THREE.Vector2();
+const smegPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0),smegPoint=new THREE.Vector3();
+function smegMessage(s){document.getElementById('smegMessage').textContent=s}
+function saveSmeg(){try{localStorage.setItem(smegStorage,JSON.stringify({enabled:smegEnabled,...smegPlacement}))}catch(e){}}
+function smegFits(x,z,a){
+ const co=Math.cos(a),si=Math.sin(a);
+ for(const dx of [-smegHalfWidth,smegHalfWidth])for(const dz of [-smegHalfDepth,smegHalfDepth]){
+  const px=x+dx*co+dz*si,pz=z-dx*si+dz*co;
+  if(px<.10||px>3.25||pz<.12||pz>4.55||(pz>2.91&&px<.69))return false;
+ }
+ const other=[
+  [table,tableHalfWidth,tableHalfDepth],
+  [preppy,preppyHalfWidth,preppyHalfDepth],
+  [oskar,oskarHalfWidth,oskarHalfDepth],
+  [neptun,neptunHalfWidth,neptunHalfDepth],
+  [fillis,fillisHalfWidth,fillisHalfDepth]
+ ];
+ for(const [item,hw,hd] of other){
+  if(item?.visible&&desksOverlap({x,z,a,w:smegHalfWidth,d:smegHalfDepth},{x:item.position.x,z:item.position.z,a:item.rotation.y,w:hw,d:hd}))return false;
+ }
+ return true;
+}
+function placeSmeg(x,z,a,persist=true){
+ if(!smeg||!smegFits(x,z,a))return false;
+ smeg.position.set(x,smegFloorY+.005,z);smeg.rotation.y=a;
+ smegPlacement={x,z,a};
+ smegMessage('SMEG · X: '+x.toFixed(2)+' м · Z: '+z.toFixed(2)+' м · угол: '+Math.round(THREE.MathUtils.radToDeg(a))+'°');
+ if(persist)saveSmeg();
+ return true;
+}
+function syncSmeg(){
+ const ready=Boolean(smeg&&smegEnabled&&smeg.visible);
+ for(const id of ['smegRotateLeft45','smegRotateRight45','smegRotateLeft90','smegRotateRight90','smegTop','smegReset'])document.getElementById(id).disabled=!ready;
+ document.getElementById('smegVisible').checked=smegEnabled;
+}
+function findSmegPlace(){
+ const variants=[smegPlacement,smegDefault,{x:2.78,z:3.52,a:0},{x:2.83,z:2.87,a:0},{x:2.75,z:1.95,a:0},{x:1.06,z:3.65,a:Math.PI/2}];
+ for(const p of variants){if(placeSmeg(p.x,p.z,p.a,false))return true;}
+ for(let z=4.1;z>=.7;z-=.24)for(let x=2.9;x>=.9;x-=.23)if(placeSmeg(x,z,0,false))return true;
+ return false;
+}
+async function loadSmeg(){
+ if(smeg){smeg.visible=smegEnabled;syncSmeg();return}
+ if(smegLoading)return smegLoading;
+ smegMessage('Загрузка 3D-модели SMEG FAB5LOR6…');
+ smegLoading=(async()=>{
+  try{
+   const res=await fetch('assets/smeg-v14/smeg-fab5lor6-v14.glb');
+   if(!res.ok)throw new Error('HTTP '+res.status);
+   const bytes=await res.arrayBuffer();
+   if(new TextDecoder().decode(new Uint8Array(bytes,0,4))!=='glTF')throw new Error('Недопустимый GLB');
+   const gltf=await loader.parseAsync(bytes,'');
+   const box=new THREE.Box3().setFromObject(gltf.scene);
+   const size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+   if(box.isEmpty()||![size.x,size.y,size.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('Некорректная геометрия SMEG');
+   if(Math.abs(size.x-.404)>.03||Math.abs(size.y-.725)>.03||Math.abs(size.z-.57)>.04)throw new Error('Размеры SMEG отличаются от заводской спецификации');
+   const group=new THREE.Group();group.name='SMEG FAB5LOR6 | V14 | orange miniature refrigerator';
+   gltf.scene.position.set(-center.x,-box.min.y,-center.z);
+   gltf.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+   group.add(gltf.scene);
+   smegHalfWidth=size.x/2;smegHalfDepth=size.z/2;
+   smeg=group;
+   scene.add(smeg);
+   smeg.visible=smegEnabled;
+   if(!findSmegPlace())throw new Error('В комнате нет свободного места для минибара. Убери или передвинь соседнюю мебель.');
+   smeg.visible=smegEnabled;
+   syncSmeg();saveSmeg();
+   if(!smegEnabled)smegMessage('SMEG выключен. Положение сохранено.');
+  }catch(error){
+   console.error('SMEG load failed',error);
+   if(smeg){scene.remove(smeg);smeg=null}
+   smegEnabled=false;syncSmeg();saveSmeg();renderCart();
+   smegMessage('Не удалось установить минибар: '+String(error.message||error));
+  }
+ })().finally(()=>{smegLoading=null;});
+ return smegLoading;
+}
+function setSmegEnabled(yes){
+ smegEnabled=Boolean(yes);
+ if(!smegEnabled&&smegDragging){smegDragging=null;controls.enabled=true;canvas.style.cursor=''}
+ if(smeg)smeg.visible=smegEnabled;
+ if(smegEnabled){
+  if(smeg){
+   if(!findSmegPlace()){smegEnabled=false;smeg.visible=false;smegMessage('Свободного места нет. Перемести другую мебель.')}
+  }else if(room)void loadSmeg();
+  else smegMessage('Минибар появится после загрузки комнаты.');
+ }else smegMessage('Минибар убран из комнаты. Положение сохранено.');
+ syncSmeg();saveSmeg();renderCart();
+}
+function smegPointer(e){
+ const bounds=canvas.getBoundingClientRect();
+ smegMouse.set((e.clientX-bounds.left)/bounds.width*2-1,1-(e.clientY-bounds.top)/bounds.height*2);
+ smegRay.setFromCamera(smegMouse,camera);
+}
+function endSmegDrag(e){
+ if(!smegDragging||smegDragging.pointerId!==e.pointerId)return;
+ e.stopImmediatePropagation();smegDragging=null;controls.enabled=true;canvas.style.cursor='';saveSmeg();
+ try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(!smeg?.visible||e.button!==0)return;
+ smegPointer(e);
+ if(!smegRay.intersectObject(smeg,true).length)return;
+ e.preventDefault();e.stopImmediatePropagation();controls.enabled=false;animation=null;
+ smegPlane.constant=-(smegFloorY+.005);
+ const hit=smegRay.ray.intersectPlane(smegPlane,smegPoint);
+ smegDragging={pointerId:e.pointerId,dx:hit?smeg.position.x-hit.x:0,dz:hit?smeg.position.z-hit.z:0};
+ canvas.style.cursor='grabbing';
+ try{canvas.setPointerCapture(e.pointerId)}catch(error){}
+},true);
+canvas.addEventListener('pointermove',e=>{
+ if(smegDragging&&smegDragging.pointerId===e.pointerId){
+  e.preventDefault();e.stopImmediatePropagation();smegPointer(e);
+  const hit=smegRay.ray.intersectPlane(smegPlane,smegPoint);
+  if(!hit)return;
+  const x=hit.x+smegDragging.dx,z=hit.z+smegDragging.dz,a=smeg.rotation.y;
+  if(!placeSmeg(x,z,a,false))
+   if(!placeSmeg(x,smeg.position.z,a,false))placeSmeg(smeg.position.x,z,a,false);
+  return;
+ }
+},true);
+canvas.addEventListener('pointerup',endSmegDrag,true);
+canvas.addEventListener('pointercancel',endSmegDrag,true);
+try{
+ const saved=JSON.parse(localStorage.getItem(smegStorage));
+ if(saved&&typeof saved==='object'){
+  smegEnabled=saved.enabled===true;
+  if([saved.x,saved.z,saved.a].every(Number.isFinite))smegPlacement={x:saved.x,z:saved.z,a:saved.a};
+ }
+}catch(e){}
+syncSmeg();
+document.getElementById('smegVisible').addEventListener('change',e=>setSmegEnabled(e.target.checked));
+document.getElementById('smegTop').addEventListener('click',()=>setView('top'));
+function rotateSmeg(degrees){
+ if(!smeg?.visible)return;
+ const a=THREE.MathUtils.euclideanModulo(smeg.rotation.y+THREE.MathUtils.degToRad(degrees),Math.PI*2);
+ const x=smeg.position.x,z=smeg.position.z;
+ if(placeSmeg(x,z,a))return;
+ for(let radius=.05;radius<=1.3;radius+=.05){
+  const count=Math.max(16,Math.ceil(2*Math.PI*radius/.07));
+  for(let i=0;i<count;i++){
+   const x1=x+radius*Math.cos(2*Math.PI*i/count),z1=z+radius*Math.sin(2*Math.PI*i/count);
+   if(placeSmeg(x1,z1,a)){
+    smegMessage('Повернут на '+Math.abs(degrees)+'° и сдвинут для сохранения прохода.');
+    return;
+   }
+  }
+ }
+ smegMessage('Недостаточно свободного места для поворота. Передвинь другую мебель.');
+}
+document.getElementById('smegRotateLeft45').addEventListener('click',()=>rotateSmeg(-45));
+document.getElementById('smegRotateRight45').addEventListener('click',()=>rotateSmeg(45));
+document.getElementById('smegRotateLeft90').addEventListener('click',()=>rotateSmeg(-90));
+document.getElementById('smegRotateRight90').addEventListener('click',()=>rotateSmeg(90));
+document.getElementById('smegReset').addEventListener('click',()=>{
+ if(!smeg)return;
+ if(!placeSmeg(smegDefault.x,smegDefault.z,smegDefault.a))smegMessage('Место занято. Убери соседнюю мебель.');
+});
+
+
 /* Approved table V4: exact GLB extracted in build_site.py from embedded modelBytes.
    Geometry, UVs, and materials are preserved. Only scene placement/rigid rotation
    and uniform scale when needed to fit the room are applied. */
@@ -607,6 +798,7 @@ function tableFits(x,z,a){
  if(preppy?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:preppy.position.x,z:preppy.position.z,a:preppy.rotation.y,w:preppyHalfWidth,d:preppyHalfDepth}))return false;
  if(neptun?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
  if(fillis?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:fillis.position.x,z:fillis.position.z,a:fillis.rotation.y,w:fillisHalfWidth,d:fillisHalfDepth}))return false;
+ if(smeg?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:smeg.position.x,z:smeg.position.z,a:smeg.rotation.y,w:smegHalfWidth,d:smegHalfDepth}))return false;
  return true;
 }
 function placeTable(x,z,a,persist=true){
@@ -789,6 +981,7 @@ function preppyFits(x,z,a){
  if(table?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
  if(neptun?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
  if(fillis?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:fillis.position.x,z:fillis.position.z,a:fillis.rotation.y,w:fillisHalfWidth,d:fillisHalfDepth}))return false;
+ if(smeg?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:smeg.position.x,z:smeg.position.z,a:smeg.rotation.y,w:smegHalfWidth,d:smegHalfDepth}))return false;
  return true;
 }
 function placePreppy(x,z,a,store=true){
@@ -942,6 +1135,7 @@ function oskarFits(x,z,a){
  if(table?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
  if(neptun?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
  if(fillis?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:fillis.position.x,z:fillis.position.z,a:fillis.rotation.y,w:fillisHalfWidth,d:fillisHalfDepth}))return false;
+ if(smeg?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:smeg.position.x,z:smeg.position.z,a:smeg.rotation.y,w:smegHalfWidth,d:smegHalfDepth}))return false;
  return true;
 }
 function placeOskar(x,z,a,store=true){
@@ -1120,6 +1314,7 @@ function neptunFits(x,z,a){
  if(oskar?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:oskar.position.x,z:oskar.position.z,a:oskar.rotation.y,w:oskarHalfWidth,d:oskarHalfDepth}))return false;
  if(table?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
  if(fillis?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:fillis.position.x,z:fillis.position.z,a:fillis.rotation.y,w:fillisHalfWidth,d:fillisHalfDepth}))return false;
+ if(smeg?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:smeg.position.x,z:smeg.position.z,a:smeg.rotation.y,w:smegHalfWidth,d:smegHalfDepth}))return false;
  return true;
 }
 function placeNeptun(x,z,a,store=true){
@@ -1298,6 +1493,7 @@ function fillisFits(x,z,a){
  if(oskar?.visible&&desksOverlap({x,z,a,w:fillisHalfWidth,d:fillisHalfDepth},{x:oskar.position.x,z:oskar.position.z,a:oskar.rotation.y,w:oskarHalfWidth,d:oskarHalfDepth}))return false;
  if(table?.visible&&desksOverlap({x,z,a,w:fillisHalfWidth,d:fillisHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
  if(neptun?.visible&&desksOverlap({x,z,a,w:fillisHalfWidth,d:fillisHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
+ if(smeg?.visible&&desksOverlap({x,z,a,w:fillisHalfWidth,d:fillisHalfDepth},{x:smeg.position.x,z:smeg.position.z,a:smeg.rotation.y,w:smegHalfWidth,d:smegHalfDepth}))return false;
  return true;
 }
 function placeFillis(x,z,a,store=true){
@@ -1584,6 +1780,7 @@ function cartItemsSelected(){
  if(oskarEnabled)chosen.push({id:'oskar-v1',qty:1,category:'Стол',title:'Oskar · Loft Concept V1',sku:'16.023-2 · шпон ореха',amount:94600,photo:'oskar-original.jpg',url:'https://loft-concept.ru/catalog/product/rabochiy-stol-oskar-shpon-orekh/'});
  if(neptunEnabled)chosen.push({id:'neptun-v2',qty:1,category:'Стол',title:'Нептун · OGOGO V2',sku:'1001723 · 54 × 47 × 50 см',amount:49900,photo:'neptun-original.webp',url:'https://ogogo.ru/goods/sa_zsnepg/'});
   if(fillisEnabled)chosen.push({id:'fillis-v4',qty:1,category:'Стол',title:'Fillis Olive · Divan.ru V4',sku:'301131 · 80 × 45 × 45 см',amount:null,photo:"https://cdn0.divan.ru/img/v1/rCMYPCJdj1_JOLB1NwjU7LvGftbiqv-EMzvuQS_2t_Y/t%3A0%3A%3A0%3A0/pd%3A123%3A160%3A123%3A160/rs%3Afit%3A948%3A594%3A0%3A1%3Ace%3A0%3A0/g%3Ace%3A0%3A0/bg%3Af5f3f1/q%3A85/czM6Ly9kaXZhbi9wcm9kdWN0LzU4OTc4ODMucG5n.jpg",url:"https://www.divan.ru/product/jurnalnyj-stol-fillis-olive"});
+ if(smegEnabled)chosen.push({id:'smeg-fab5lor6-v14',qty:1,category:'Минибар',title:'SMEG FAB5LOR6 · оранжевый минибар',sku:'FAB5LOR6 · 40,4 × 50 × 72,5 см · тест V14',amount:null,photo:'assets/smeg-v14/original.jpg',url:'https://smg-kitchen.ru/minibar-smeg-oranzhevyy-fab5lor6/'});
  return chosen;
 }
 function renderCart(){
@@ -1608,7 +1805,7 @@ function renderCart(){
   const sku=document.createElement('small');sku.textContent=item.sku+' · 1 шт.';body.appendChild(sku);
   const price=document.createElement('span');price.className='cart-price';price.textContent=Number.isFinite(item.amount)?formatPrice(item.amount):'Цена не подтверждена';body.appendChild(price);
   const link=document.createElement('a');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Карточка товара';body.appendChild(link);
-  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>item.id==='table-01-v4'?setTableEnabled(false):item.id==='table-02-v5'?setPreppyEnabled(false):item.id==='oskar-v1'?setOskarEnabled(false):item.id==='neptun-v2'?setNeptunEnabled(false):item.id==='fillis-v4'?setFillisEnabled(false):setRugEnabled(false));body.appendChild(remove);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>item.id==='table-01-v4'?setTableEnabled(false):item.id==='table-02-v5'?setPreppyEnabled(false):item.id==='oskar-v1'?setOskarEnabled(false):item.id==='neptun-v2'?setNeptunEnabled(false):item.id==='fillis-v4'?setFillisEnabled(false):item.id==='smeg-fab5lor6-v14'?setSmegEnabled(false):setRugEnabled(false));body.appendChild(remove);
   list.appendChild(row);
  }
  document.getElementById('clearCart').disabled=count===0;
@@ -1623,7 +1820,7 @@ document.getElementById('openCart').addEventListener('click',openCart);
 document.getElementById('closeCart').addEventListener('click',closeCart);
 document.getElementById('cartDim').addEventListener('click',closeCart);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('cartBackdrop').hidden)closeCart()});
-document.getElementById('clearCart').addEventListener('click',()=>{setRugEnabled(false);setTableEnabled(false);setPreppyEnabled(false);setOskarEnabled(false);setNeptunEnabled(false);setFillisEnabled(false)});
+document.getElementById('clearCart').addEventListener('click',()=>{setRugEnabled(false);setTableEnabled(false);setPreppyEnabled(false);setOskarEnabled(false);setNeptunEnabled(false);setFillisEnabled(false);setSmegEnabled(false)});
 document.getElementById('rugVisible').addEventListener('change',e=>setRugEnabled(e.target.checked));
 document.querySelectorAll('[data-rug-variant]').forEach(b=>b.addEventListener('click',()=>selectRug(b.dataset.rugVariant)));
 for(const tab of document.querySelectorAll('[data-catalog-tab]')){
@@ -1710,6 +1907,7 @@ loadRoom().then(gltf=>{
  if(oskarEnabled)void loadOskar();
  if(neptunEnabled)void loadNeptun();
  if(fillisEnabled)void loadFillis();
+ if(smegEnabled)void loadSmeg();
  const qs=new URLSearchParams(location.search);
  setLightMode(qs.get('night')==='1'?'night':'day');
  const transparency=Math.max(0,Math.min(100,Number(qs.get('walls'))||0));
