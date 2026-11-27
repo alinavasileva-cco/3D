@@ -196,6 +196,26 @@ def build() -> None:
     (OUT / "neptun-original.webp").write_bytes(photo)
     (OUT / "table-v8").mkdir(exist_ok=True)
     shutil.copyfile(ROOT / "table-v8" / "reference.jpg", OUT / "table-v8" / "reference.jpg")
+    # Fillis Olive V4: publish every exact approved binary part used by index.html.
+    fillis_dir = ROOT / "assets" / "fillis-v4"
+    fillis_parts = [fillis_dir / f"part{i:02d}.bin" for i in range(1, 16)]
+    fillis = b"".join(path.read_bytes() for path in fillis_parts)
+    fillis_sha256 = "3d5947d1e36ae8ee1a5d384dfacd5af1b6ce6d20c3e609bd2995700bafb6f5be"
+    if len(fillis) != 10_099_580 or hashlib.sha256(fillis).hexdigest() != fillis_sha256:
+        raise ValueError("Fillis Olive V4 differs from the approved GLB")
+    if fillis[:4] != b"glTF" or struct.unpack_from("<II", fillis, 4) != (2, len(fillis)):
+        raise ValueError("Invalid Fillis V4 GLB header")
+    fillis_json_length, fillis_chunk_type = struct.unpack_from("<I4s", fillis, 12)
+    if fillis_chunk_type != b"JSON" or len(json.loads(fillis[20:20 + fillis_json_length]).get("meshes", [])) != 9:
+        raise ValueError("Invalid Fillis V4 mesh data")
+    for path in [*fillis_parts, fillis_dir / "product.json"]:
+        dest = OUT / path.relative_to(ROOT)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, dest)
+    published_fillis = b"".join((OUT / path.relative_to(ROOT)).read_bytes() for path in fillis_parts)
+    if hashlib.sha256(published_fillis).hexdigest() != fillis_sha256:
+        raise ValueError("Published Fillis V4 parts failed checksum")
+    print(f"Verified and published Fillis V4: {len(fillis):,} bytes; 15 parts; SHA-256 {fillis_sha256}")
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Verified room GLB: {len(model):,} bytes, {nodes} nodes, {meshes} meshes")
     print(f"SHA256: {EXPECTED_SHA256}")
