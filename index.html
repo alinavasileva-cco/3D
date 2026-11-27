@@ -1329,7 +1329,7 @@ async function loadFillis(){
    const bounds=new THREE.Box3().setFromObject(gltf.scene);
    const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
    if(bounds.isEmpty()||![size.x,size.y,size.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('неверные габариты модели');
-   if(Math.abs(size.x-.80)>.005||Math.abs(size.z-.45)>.005||Math.abs(size.y-.45>.005)throw new Error('размеры GLB не помещаются в кабинет при масштабе 1:1');
+   if(Math.abs(size.x-.80)>.005||Math.abs(size.z-.45)>.005||Math.abs(size.y-.45)>.005)throw new Error('размеры GLB не помещаются в кабинет при масштабе 1:1');
    const group=new THREE.Group();group.name='Fillis Divan.ru V4 | перемещаемый стол';
    gltf.scene.position.set(-center.x,-bounds.min.y,-center.z);
    group.add(gltf.scene);
