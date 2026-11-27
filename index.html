@@ -303,6 +303,12 @@ box-shadow:0 8px 24px #0005;backdrop-filter:blur(15px);cursor:pointer;touch-acti
   <div class="furniture-view"><span>OGOGO</span><a href="https://ogogo.ru/goods/sa_zsnepg/" target="_blank" rel="noopener noreferrer">К товару</a></div>
   </details>
 </div>
+<div class="furniture-preview table-card" id="fillisCard" aria-label="Журнальный стол Филлис Оливковый Divan.ru">
+<div class="table-mini"><a href="https://www.divan.ru/product/jurnalnyj-stol-fillis-olive" target="_blank" rel="noopener noreferrer"><img src="https://cdn0.divan.ru/img/v1/rCMYPCJdj1_JOLB1NwjU7LvGftbiqv-EMzvuQS_2t_Y/t%3A0%3A%3A0%3A0/pd%3A123%3A160%3A123%3A160/rs%3Afit%3A948%3A594%3A0%3A1%3Ace%3A0%3A0/g%3Ace%3A0%3A0/bg%3Af5f3f1/q%3A85/czM6Ly9kaXZhbi9wcm9kdWN0LzU4OTc4ODMucG5n.jpg" alt="Оригинал Филлис Оливковый" loading="lazy"></a><div><strong>Fillis Olive · Divan.ru V4</strong><span class="table-price-missing">Цена не подтверждена</span><small>301131 · 80 × 45 × 45 см</small></div></div>
+<label class="rug-check"><input id="fillisVisible" type="checkbox"><span>Поставить Fillis в кабинет</span></label>
+<details class="catalog-details"><summary>Настройки</summary><p>Перемещай мышью или пальцем. Поворот на 45° и 90°. Положение сохраняется. Матовое покрытие BlenderKit, согласованная модель V4.</p>
+<div class="table-controls"><button id="fillisRotateLeft45" disabled>↶ 45°</button><button id="fillisRotateRight45" disabled>↷ 45°</button><button id="fillisRotateLeft90" disabled>↶ 90°</button><button id="fillisRotateRight90" disabled>↷ 90°</button><button id="fillisTop" disabled>Вид сверху</button><button id="fillisReset" disabled>Сбросить положение</button></div>
+<div id="fillisMessage" role="status" aria-live="polite">Fillis пока не установлен.</div><div class="furniture-view"><span>Divan.ru</span><a href="https://www.divan.ru/product/jurnalnyj-stol-fillis-olive" target="_blank" rel="noopener noreferrer">К товару</a></div><p>Актуальная цена и наличие не подтверждены; в общую сумму не включается.</p></details></div>
 </div>
 <div class="ins-head">Материалы комнаты</div>
 <div class="mat-card"><div class="mat-title">Пол · BRONIX Kvarr Ёлка Amber</div>
@@ -600,6 +606,7 @@ function tableFits(x,z,a){
  if(oskar?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:oskar.position.x,z:oskar.position.z,a:oskar.rotation.y,w:oskarHalfWidth,d:oskarHalfDepth}))return false;
  if(preppy?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:preppy.position.x,z:preppy.position.z,a:preppy.rotation.y,w:preppyHalfWidth,d:preppyHalfDepth}))return false;
  if(neptun?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
+ if(fillis?.visible&&desksOverlap({x,z,a,w:tableHalfWidth,d:tableHalfDepth},{x:fillis.position.x,z:fillis.position.z,a:fillis.rotation.y,w:fillisHalfWidth,d:fillisHalfDepth}))return false;
  return true;
 }
 function placeTable(x,z,a,persist=true){
@@ -621,7 +628,7 @@ function releaseTableDrag(e){
  try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!table?.visible||e.button!==0)return;
+ if(!table?.visible||e.button!==0||fillisDragging)return;
  tablePointer(e);
  if(!tableRay.intersectObject(table,true).length)return;
  e.preventDefault();e.stopImmediatePropagation();
@@ -632,7 +639,7 @@ canvas.addEventListener('pointerdown',e=>{
  canvas.style.cursor='grabbing';try{canvas.setPointerCapture(e.pointerId)}catch(error){}
 },true);
 canvas.addEventListener('pointermove',e=>{
- if(preppyDragging||oskarDragging||neptunDragging)return;
+ if(preppyDragging||oskarDragging||neptunDragging||fillisDragging)return;
  if(tableDragging&&tableDragging.pointerId===e.pointerId){
   e.preventDefault();e.stopImmediatePropagation();tablePointer(e);
   const hit=tableRay.ray.intersectPlane(tablePlane,tablePoint);
@@ -781,6 +788,7 @@ function preppyFits(x,z,a){
  if(oskar?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:oskar.position.x,z:oskar.position.z,a:oskar.rotation.y,w:oskarHalfWidth,d:oskarHalfDepth}))return false;
  if(table?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
  if(neptun?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
+ if(fillis?.visible&&desksOverlap({x,z,a,w:preppyHalfWidth,d:preppyHalfDepth},{x:fillis.position.x,z:fillis.position.z,a:fillis.rotation.y,w:fillisHalfWidth,d:fillisHalfDepth}))return false;
  return true;
 }
 function placePreppy(x,z,a,store=true){
@@ -863,7 +871,7 @@ function endPreppyDrag(e){
  try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!preppy?.visible||e.button!==0||tableDragging||neptunDragging)return;
+ if(!preppy?.visible||e.button!==0||tableDragging||neptunDragging||fillisDragging)return;
  pointerPreppy(e);
  if(!preppyRay.intersectObject(preppy,true).length)return;
  e.preventDefault();e.stopImmediatePropagation();animation=null;controls.enabled=false;
@@ -933,6 +941,7 @@ function oskarFits(x,z,a){
  if(preppy?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:preppy.position.x,z:preppy.position.z,a:preppy.rotation.y,w:preppyHalfWidth,d:preppyHalfDepth}))return false;
  if(table?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
  if(neptun?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
+ if(fillis?.visible&&desksOverlap({x,z,a,w:oskarHalfWidth,d:oskarHalfDepth},{x:fillis.position.x,z:fillis.position.z,a:fillis.rotation.y,w:fillisHalfWidth,d:fillisHalfDepth}))return false;
  return true;
 }
 function placeOskar(x,z,a,store=true){
@@ -1015,7 +1024,7 @@ function endOskarDrag(e){
  try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!oskar?.visible||e.button!==0||tableDragging||preppyDragging||neptunDragging)return;
+ if(!oskar?.visible||e.button!==0||tableDragging||preppyDragging||neptunDragging||fillisDragging)return;
  pointerOskar(e);
  if(!oskarRay.intersectObject(oskar,true).length)return;
  e.preventDefault();e.stopImmediatePropagation();animation=null;controls.enabled=false;
@@ -1110,6 +1119,7 @@ function neptunFits(x,z,a){
  if(preppy?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:preppy.position.x,z:preppy.position.z,a:preppy.rotation.y,w:preppyHalfWidth,d:preppyHalfDepth}))return false;
  if(oskar?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:oskar.position.x,z:oskar.position.z,a:oskar.rotation.y,w:oskarHalfWidth,d:oskarHalfDepth}))return false;
  if(table?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
+ if(fillis?.visible&&desksOverlap({x,z,a,w:neptunHalfWidth,d:neptunHalfDepth},{x:fillis.position.x,z:fillis.position.z,a:fillis.rotation.y,w:fillisHalfWidth,d:fillisHalfDepth}))return false;
  return true;
 }
 function placeNeptun(x,z,a,store=true){
@@ -1192,7 +1202,7 @@ function endNeptunDrag(e){
  try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!neptun?.visible||e.button!==0||tableDragging||preppyDragging||oskarDragging)return;
+ if(!neptun?.visible||e.button!==0||tableDragging||preppyDragging||oskarDragging||fillisDragging)return;
  pointerNeptun(e);
  if(!neptunRay.intersectObject(neptun,true).length)return;
  e.preventDefault();e.stopImmediatePropagation();animation=null;controls.enabled=false;
@@ -1264,6 +1274,186 @@ document.getElementById('neptunReset').addEventListener('click',()=>{
 });
 
 
+/* Fillis Divan.ru V4: original validated GLB, independent on/off, rotation and movement.
+   Measured GLB bounds are used in metres; no replacement geometry or resizing. */
+const fillisStorage='cabinet1_fillis_v4_placement_v1';
+const fillisDefault={x:2.55,z:1.5,a:0};
+let fillis=null,fillisEnabled=false,fillisDragging=null,fillisLoading=null;
+let fillisHalfWidth=.40,fillisHalfDepth=.225,fillisFloorY=0;
+let fillisPlacement={...fillisDefault};
+const fillisRay=new THREE.Raycaster(),fillisMouse=new THREE.Vector2();
+const fillisPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+const fillisPoint=new THREE.Vector3();
+function fillisMessage(msg){document.getElementById('fillisMessage').textContent=msg}
+function saveFillis(){
+ try{localStorage.setItem(fillisStorage,JSON.stringify({enabled:fillisEnabled,x:fillisPlacement.x,z:fillisPlacement.z,a:fillisPlacement.a}))}catch(e){}
+}
+function fillisFits(x,z,a){
+ const c=Math.cos(a),s=Math.sin(a);
+ for(const dx of [-fillisHalfWidth,fillisHalfWidth])for(const dz of [-fillisHalfDepth,fillisHalfDepth]){
+  const px=x+dx*c+dz*s,pz=z-dx*s+dz*c;
+  if(px<.10||px>3.25||pz<.12||pz>4.55||(pz>2.91&&px<.69))return false;
+ }
+ if(preppy?.visible&&desksOverlap({x,z,a,w:fillisHalfWidth,d:fillisHalfDepth},{x:preppy.position.x,z:preppy.position.z,a:preppy.rotation.y,w:preppyHalfWidth,d:preppyHalfDepth}))return false;
+ if(oskar?.visible&&desksOverlap({x,z,a,w:fillisHalfWidth,d:fillisHalfDepth},{x:oskar.position.x,z:oskar.position.z,a:oskar.rotation.y,w:oskarHalfWidth,d:oskarHalfDepth}))return false;
+ if(table?.visible&&desksOverlap({x,z,a,w:fillisHalfWidth,d:fillisHalfDepth},{x:table.position.x,z:table.position.z,a:table.rotation.y,w:tableHalfWidth,d:tableHalfDepth}))return false;
+ if(neptun?.visible&&desksOverlap({x,z,a,w:fillisHalfWidth,d:fillisHalfDepth},{x:neptun.position.x,z:neptun.position.z,a:neptun.rotation.y,w:neptunHalfWidth,d:neptunHalfDepth}))return false;
+ return true;
+}
+function placeFillis(x,z,a,store=true){
+ if(!fillis||!fillisFits(x,z,a))return false;
+ fillis.position.set(x,fillisFloorY+.008,z);fillis.rotation.y=a;
+ fillisPlacement={x,z,a};
+ fillisMessage('Fillis · X: '+x.toFixed(2)+' м · Z: '+z.toFixed(2)+' м · угол: '+Math.round(THREE.MathUtils.radToDeg(a))+'°');
+ if(store)saveFillis();
+ return true;
+}
+function syncFillisControls(){
+ const active=Boolean(fillis&&fillisEnabled&&fillis.visible);
+ for(const id of ['fillisTop','fillisRotateLeft45','fillisRotateRight45','fillisRotateLeft90','fillisRotateRight90','fillisReset'])document.getElementById(id).disabled=!active;
+ document.getElementById('fillisVisible').checked=fillisEnabled;
+}
+async function loadFillis(){
+ if(fillis){fillis.visible=fillisEnabled;syncFillisControls();return;}
+ if(fillisLoading)return fillisLoading;
+ fillisMessage('Загрузка модели Fillis V4…');
+ fillisLoading=(async()=>{
+  try{
+   const parts=await Promise.all(["assets/fillis-v4/part01.bin","assets/fillis-v4/part02.bin","assets/fillis-v4/part03.bin","assets/fillis-v4/part04.bin","assets/fillis-v4/part05.bin","assets/fillis-v4/part06.bin","assets/fillis-v4/part07.bin","assets/fillis-v4/part08.bin","assets/fillis-v4/part09.bin","assets/fillis-v4/part10.bin","assets/fillis-v4/part11.bin","assets/fillis-v4/part12.bin","assets/fillis-v4/part13.bin","assets/fillis-v4/part14.bin","assets/fillis-v4/part15.bin"].map(async path=>{const response=await fetch(path);if(!response.ok)throw new Error(path+' HTTP '+response.status);return new Uint8Array(await response.arrayBuffer());}));
+ const data=new Uint8Array(parts.reduce((n,p)=>n+p.byteLength,0));let offset=0;for(const part of parts){data.set(part,offset);offset+=part.byteLength;}
+ if(data.byteLength!==10099580)throw new Error('неверная длина GLB V4');
+ if(globalThis.crypto?.subtle){const sha=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data)),v=>v.toString(16).padStart(2,'0')).join('');if(sha!=='3d5947d1e36ae8ee1a5d384dfacd5af1b6ce6d20c3e609bd2995700bafb6f5be')throw new Error('контрольная сумма GLB V4 не совпадает');}
+ const glb=data.buffer;
+   if(new TextDecoder().decode(new Uint8Array(glb,0,4))!=='glTF')throw new Error('неверный GLB');
+   const gltf=await loader.parseAsync(glb,'');
+   const bounds=new THREE.Box3().setFromObject(gltf.scene);
+   const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+   if(bounds.isEmpty()||![size.x,size.y,size.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('неверные габариты модели');
+   if(Math.abs(size.x-.80)>.005||Math.abs(size.z-.45)>.005||Math.abs(size.y-.45>.005)throw new Error('размеры GLB не помещаются в кабинет при масштабе 1:1');
+   const group=new THREE.Group();group.name='Fillis Divan.ru V4 | перемещаемый стол';
+   gltf.scene.position.set(-center.x,-bounds.min.y,-center.z);
+   group.add(gltf.scene);
+   fillisHalfWidth=size.x/2;fillisHalfDepth=size.z/2;
+   group.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+   const floorRay=new THREE.Raycaster(new THREE.Vector3(fillisDefault.x,6,fillisDefault.z),new THREE.Vector3(0,-1,0),0,12);
+   const intersections=floorRay.intersectObjects(floors,true);
+   fillisFloorY=intersections.length?intersections[0].point.y:0;
+   fillis=group;scene.add(fillis);
+   const presets=[fillisPlacement,fillisDefault,{x:1.75,z:1.15,a:0},{x:1.68,z:3.85,a:Math.PI/2},{x:2.28,z:3.55,a:0},{x:1.75,z:1.0,a:Math.PI/2}];
+   let placed=false;
+   for(const p of presets){if(placeFillis(p.x,p.z,p.a,false)){placed=true;break}}
+   if(!placed)throw new Error('для Fillis нет свободного места при указанных габаритах');
+   fillis.visible=fillisEnabled;
+   syncFillisControls();saveFillis();
+   if(!fillisEnabled)fillisMessage('Fillis выключен. Положение сохранено.');
+  }catch(error){
+   console.error(error);
+   if(fillis){scene.remove(fillis);fillis=null;}
+   fillisMessage('Не удалось установить Fillis: '+String(error.message||error));
+   fillisEnabled=false;syncFillisControls();saveFillis();renderCart();
+  }
+ })().finally(()=>{fillisLoading=null});
+ return fillisLoading;
+}
+function setFillisEnabled(yes){
+ fillisEnabled=Boolean(yes);
+ if(!fillisEnabled&&fillisDragging){fillisDragging=null;controls.enabled=true;canvas.style.cursor='';}
+ if(fillis)fillis.visible=fillisEnabled;
+ if(fillisEnabled){
+  if(fillis){
+   if(!placeFillis(fillisPlacement.x,fillisPlacement.z,fillisPlacement.a,false)){
+    fillisMessage('Положение пересекает второй стол. Перемести второй стол и включи Fillis.');
+    fillisEnabled=false;fillis.visible=false;
+   }
+  }else if(room)void loadFillis();
+  else fillisMessage('Модель появится после загрузки комнаты.');
+ }else fillisMessage('Стол Fillis убран из комнаты. Положение сохранено.');
+ syncFillisControls();saveFillis();renderCart();
+}
+function pointerFillis(e){
+ const rect=canvas.getBoundingClientRect();
+ fillisMouse.set((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2);
+ fillisRay.setFromCamera(fillisMouse,camera);
+}
+function endFillisDrag(e){
+ if(!fillisDragging||fillisDragging.pointerId!==e.pointerId)return;
+ e.stopImmediatePropagation();fillisDragging=null;controls.enabled=true;
+ canvas.style.cursor='';saveFillis();
+ try{canvas.releasePointerCapture(e.pointerId)}catch(error){}
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(!fillis?.visible||e.button!==0||tableDragging||preppyDragging||oskarDragging||neptunDragging)return;
+ pointerFillis(e);
+ if(!fillisRay.intersectObject(fillis,true).length)return;
+ e.preventDefault();e.stopImmediatePropagation();animation=null;controls.enabled=false;
+ fillisPlane.constant=-(fillisFloorY+.008);
+ const hit=fillisRay.ray.intersectPlane(fillisPlane,fillisPoint);
+ fillisDragging={pointerId:e.pointerId,dx:hit?fillis.position.x-hit.x:0,dz:hit?fillis.position.z-hit.z:0};
+ canvas.style.cursor='grabbing';
+ try{canvas.setPointerCapture(e.pointerId)}catch(error){}
+},true);
+canvas.addEventListener('pointermove',e=>{
+ if(fillisDragging&&fillisDragging.pointerId===e.pointerId){
+  e.preventDefault();e.stopImmediatePropagation();pointerFillis(e);
+  const hit=fillisRay.ray.intersectPlane(fillisPlane,fillisPoint);
+  if(!hit)return;
+  const x=hit.x+fillisDragging.dx,z=hit.z+fillisDragging.dz,a=fillis.rotation.y;
+  if(!placeFillis(x,z,a,false))
+   if(!placeFillis(x,fillis.position.z,a,false))placeFillis(fillis.position.x,z,a,false);
+  return;
+ }
+ if(fillis?.visible){pointerFillis(e);if(fillisRay.intersectObject(fillis,true).length)canvas.style.cursor='grab'}
+},true);
+canvas.addEventListener('pointerup',endFillisDrag,true);
+canvas.addEventListener('pointercancel',endFillisDrag,true);
+try{
+ const saved=JSON.parse(localStorage.getItem(fillisStorage));
+ if(saved&&typeof saved==='object'){
+  fillisEnabled=saved.enabled===true;
+  if([saved.x,saved.z,saved.a].every(Number.isFinite))fillisPlacement={x:saved.x,z:saved.z,a:saved.a};
+ }
+}catch(e){}
+syncFillisControls();
+document.getElementById('fillisVisible').addEventListener('change',e=>setFillisEnabled(e.target.checked));
+document.getElementById('fillisTop').addEventListener('click',()=>setView('top'));
+function rotateFillisBy(degrees){
+ if(!fillis?.visible)return;
+ const angle=THREE.MathUtils.euclideanModulo(
+  fillis.rotation.y+THREE.MathUtils.degToRad(degrees),Math.PI*2
+ );
+ const startX=fillis.position.x,startZ=fillis.position.z;
+ if(placeFillis(startX,startZ,angle))return;
+ let found=null;
+ // The search expands from the previous center, preserving the fillis's angle
+ // exactly. Movement is only used to clear a genuine physical obstruction.
+ for(let radius=.05;radius<=2.65&&found===null;radius+=.05){
+  const samples=Math.max(24,Math.ceil(2*Math.PI*radius/.055));
+  for(let i=0;i<samples;i++){
+   const phi=i*2*Math.PI/samples;
+   const x=startX+radius*Math.cos(phi);
+   const z=startZ+radius*Math.sin(phi);
+   if(fillisFits(x,z,angle)){found={x,z};break}
+  }
+ }
+ if(found){
+  placeFillis(found.x,found.z,angle);
+  fillisMessage('Поворот '+(degrees>0?'+':'')+degrees+'° выполнен. Стол сдвинут на '+
+   Math.round(Math.hypot(found.x-startX,found.z-startZ)*100)+' см, чтобы не пересечь стены или другой стол.');
+ }else{
+  fillisMessage('Не удалось повернуть на '+Math.abs(degrees)+'°: нет свободного места без пересечения стен или второго стола. Передвинь соседний стол или убери его галочкой.');
+ }
+}
+document.getElementById('fillisRotateLeft45').addEventListener('click',()=>rotateFillisBy(-45));
+document.getElementById('fillisRotateRight45').addEventListener('click',()=>rotateFillisBy(45));
+document.getElementById('fillisRotateLeft90').addEventListener('click',()=>rotateFillisBy(-90));
+document.getElementById('fillisRotateRight90').addEventListener('click',()=>rotateFillisBy(90));
+document.getElementById('fillisReset').addEventListener('click',()=>{
+ if(!fillis)return;
+ if(!placeFillis(fillisDefault.x,fillisDefault.z,fillisDefault.a))
+  fillisMessage('Начальная позиция занята. Перемести другой стол или Fillis.');
+});
+
+
 /* Sanderson Matmi Avocado · independent movable BlenderKit GLB */
 let rugFiles=['rug-matmi.part01.bin','rug-matmi.part02.bin','rug-matmi.part03.bin','rug-matmi.part04.bin','rug-matmi.part05.bin'];
 let rugInit={x:1.75,z:2.30,a:0},rugStorage='cabinet1_matmi148107_v1';
@@ -1291,7 +1481,7 @@ function rugPointer(e){
  rugRay.setFromCamera(rugMouse,camera);
 }
 canvas.addEventListener('pointerdown',e=>{
- if(!rug||!rug.visible||e.button!==0||neptunDragging)return;
+ if(!rug||!rug.visible||e.button!==0||neptunDragging||fillisDragging)return;
  rugPointer(e);if(!rugRay.intersectObject(rug,true).length)return;
  e.preventDefault();e.stopImmediatePropagation();controls.enabled=false;animation=null;
  rugPlane.constant=-(rugFloorY+.0012);
@@ -1393,7 +1583,8 @@ function cartItemsSelected(){
  if(preppyEnabled)chosen.push({id:'table-02-v5',qty:1,category:'Стол',title:'Preppy · iModern V5',sku:'IMR-1329172 · 3D-модель V5',amount:null,photo:'preppy-original-main.webp',url:'https://www.inmyroom.ru/products/1329172-stol-pismennyj-preppy-korichnevogo-cveta'});
  if(oskarEnabled)chosen.push({id:'oskar-v1',qty:1,category:'Стол',title:'Oskar · Loft Concept V1',sku:'16.023-2 · шпон ореха',amount:94600,photo:'oskar-original.jpg',url:'https://loft-concept.ru/catalog/product/rabochiy-stol-oskar-shpon-orekh/'});
  if(neptunEnabled)chosen.push({id:'neptun-v2',qty:1,category:'Стол',title:'Нептун · OGOGO V2',sku:'1001723 · 54 × 47 × 50 см',amount:49900,photo:'neptun-original.webp',url:'https://ogogo.ru/goods/sa_zsnepg/'});
-  return chosen;
+  if(fillisEnabled)chosen.push({id:'fillis-v4',qty:1,category:'Стол',title:'Fillis Olive · Divan.ru V4',sku:'301131 · 80 × 45 × 45 см',amount:null,photo:"https://cdn0.divan.ru/img/v1/rCMYPCJdj1_JOLB1NwjU7LvGftbiqv-EMzvuQS_2t_Y/t%3A0%3A%3A0%3A0/pd%3A123%3A160%3A123%3A160/rs%3Afit%3A948%3A594%3A0%3A1%3Ace%3A0%3A0/g%3Ace%3A0%3A0/bg%3Af5f3f1/q%3A85/czM6Ly9kaXZhbi9wcm9kdWN0LzU4OTc4ODMucG5n.jpg",url:"https://www.divan.ru/product/jurnalnyj-stol-fillis-olive"});
+ return chosen;
 }
 function renderCart(){
  const items=cartItemsSelected();
@@ -1417,7 +1608,7 @@ function renderCart(){
   const sku=document.createElement('small');sku.textContent=item.sku+' · 1 шт.';body.appendChild(sku);
   const price=document.createElement('span');price.className='cart-price';price.textContent=Number.isFinite(item.amount)?formatPrice(item.amount):'Цена не подтверждена';body.appendChild(price);
   const link=document.createElement('a');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Карточка товара';body.appendChild(link);
-  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>item.id==='table-01-v4'?setTableEnabled(false):item.id==='table-02-v5'?setPreppyEnabled(false):item.id==='oskar-v1'?setOskarEnabled(false):item.id==='neptun-v2'?setNeptunEnabled(false):setRugEnabled(false));body.appendChild(remove);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Убрать';remove.addEventListener('click',()=>item.id==='table-01-v4'?setTableEnabled(false):item.id==='table-02-v5'?setPreppyEnabled(false):item.id==='oskar-v1'?setOskarEnabled(false):item.id==='neptun-v2'?setNeptunEnabled(false):item.id==='fillis-v4'?setFillisEnabled(false):setRugEnabled(false));body.appendChild(remove);
   list.appendChild(row);
  }
  document.getElementById('clearCart').disabled=count===0;
@@ -1432,7 +1623,7 @@ document.getElementById('openCart').addEventListener('click',openCart);
 document.getElementById('closeCart').addEventListener('click',closeCart);
 document.getElementById('cartDim').addEventListener('click',closeCart);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('cartBackdrop').hidden)closeCart()});
-document.getElementById('clearCart').addEventListener('click',()=>{setRugEnabled(false);setTableEnabled(false);setPreppyEnabled(false);setOskarEnabled(false);setNeptunEnabled(false)});
+document.getElementById('clearCart').addEventListener('click',()=>{setRugEnabled(false);setTableEnabled(false);setPreppyEnabled(false);setOskarEnabled(false);setNeptunEnabled(false);setFillisEnabled(false)});
 document.getElementById('rugVisible').addEventListener('change',e=>setRugEnabled(e.target.checked));
 document.querySelectorAll('[data-rug-variant]').forEach(b=>b.addEventListener('click',()=>selectRug(b.dataset.rugVariant)));
 for(const tab of document.querySelectorAll('[data-catalog-tab]')){
@@ -1518,6 +1709,7 @@ loadRoom().then(gltf=>{
  if(preppyEnabled)void loadPreppy();
  if(oskarEnabled)void loadOskar();
  if(neptunEnabled)void loadNeptun();
+ if(fillisEnabled)void loadFillis();
  const qs=new URLSearchParams(location.search);
  setLightMode(qs.get('night')==='1'?'night':'day');
  const transparency=Math.max(0,Math.min(100,Number(qs.get('walls'))||0));

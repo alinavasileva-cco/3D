@@ -1,0 +1,36 @@
+{
+  "product_id": "divan-301131",
+  "variant": "Fillis Olive",
+  "approved_version": "V4",
+  "source_url": "https://www.divan.ru/product/jurnalnyj-stol-fillis-olive",
+  "dimensions_m": {
+    "width": 0.8,
+    "depth": 0.45,
+    "height": 0.45
+  },
+  "sha256": "3d5947d1e36ae8ee1a5d384dfacd5af1b6ce6d20c3e609bd2995700bafb6f5be",
+  "bytes": 10099580,
+  "files": [
+    "assets/fillis-v4/part01.bin",
+    "assets/fillis-v4/part02.bin",
+    "assets/fillis-v4/part03.bin",
+    "assets/fillis-v4/part04.bin",
+    "assets/fillis-v4/part05.bin",
+    "assets/fillis-v4/part06.bin",
+    "assets/fillis-v4/part07.bin",
+    "assets/fillis-v4/part08.bin",
+    "assets/fillis-v4/part09.bin",
+    "assets/fillis-v4/part10.bin",
+    "assets/fillis-v4/part11.bin",
+    "assets/fillis-v4/part12.bin",
+    "assets/fillis-v4/part13.bin",
+    "assets/fillis-v4/part14.bin",
+    "assets/fillis-v4/part15.bin"
+  ],
+  "price": {
+    "amount": null,
+    "currency": "RUB",
+    "note": "Актуальная цена не подтверждена"
+  },
+  "approval": "User approved V4 for cabinet integration"
+}
